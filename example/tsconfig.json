@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "expo-nearby-connections": ["../src/index"],
+      "expo-nearby-connections/*": ["../src/*"]
+    }
+  }
+}
