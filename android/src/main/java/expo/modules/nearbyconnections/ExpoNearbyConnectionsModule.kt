@@ -150,9 +150,9 @@ class NearbyConnectionModule : Module() {
 
     private fun getStrategy(strategy: Number): Strategy {
         return when (strategy.toInt()) {
-            0 -> Strategy.P2P_CLUSTER
-            1 -> Strategy.P2P_STAR
-            2 -> Strategy.P2P_POINT_TO_POINT
+            1 -> Strategy.P2P_CLUSTER
+            2 -> Strategy.P2P_STAR
+            3 -> Strategy.P2P_POINT_TO_POINT
             else -> throw IllegalArgumentException("Invalid strategy")
         }
     }
