@@ -8,6 +8,12 @@ import expo.modules.kotlin.Promise
 import expo.modules.kotlin.exception.CodedException
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.nearby.Nearby
+import com.google.android.gms.nearby.connection.*
+import expo.modules.kotlin.Promise
+import expo.modules.kotlin.exception.CodedException
 
 class ExpoNearbyConnectionsModule : Module() {
     override fun definition() = ModuleDefinition {
