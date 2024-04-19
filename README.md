@@ -1,4 +1,6 @@
-# Expo Nearby Connections
+# Library Package is In Progress
+
+## Expo Nearby Connections
 
 Expo Nearby Connections is an expo wrapper of (Google Nearby Connections)[https://developers.google.com/nearby/connections/overview] library. It allows you to connect devices to each other and send data between them.
 
