@@ -6,6 +6,8 @@ Expo Nearby Connections is an expo wrapper of (Google Nearby Connections)[https:
 
 ## How To Install
 
+TBD
+
 ### Add the package to your npm dependencies
 
 For now you can install the package from github:
