@@ -20,7 +20,7 @@ const val ON_ENDPOINT_LOST = "onEndpointLost"
 const val ON_PAYLOAD_RECEIVED = "onPayloadReceived"
 const val ON_PAYLOAD_TRANSFER_UPDATE = "onPayloadTransferUpdate"
 
-class NearbyConnectionModule : Module() {
+class ExpoNearbyConnectionModule : Module() {
     override fun definition() = ModuleDefinition {
         Events(
             ON_CONNECTION_RESULT,
