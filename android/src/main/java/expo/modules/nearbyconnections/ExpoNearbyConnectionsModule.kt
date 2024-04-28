@@ -180,7 +180,7 @@ class ExpoNearbyConnectionsModule : Module() {
                     "onConnectionResult status message: ${result.status.statusMessage}"
                 )
 
-                this@NearbyConnectionModule.sendEvent(ON_CONNECTION_RESULT, data)
+                this@ExpoNearbyConnectionsModule.sendEvent(ON_CONNECTION_RESULT, data)
             }
 
             override fun onDisconnected(endpointId: String) {
@@ -192,7 +192,7 @@ class ExpoNearbyConnectionsModule : Module() {
 
                 Log.d("NearbyConnection", "onDisconnected")
 
-                this@NearbyConnectionModule.sendEvent(ON_DISCONNECTED, data)
+                this@ExpoNearbyConnectionsModule.sendEvent(ON_DISCONNECTED, data)
             }
 
             override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
@@ -205,7 +205,7 @@ class ExpoNearbyConnectionsModule : Module() {
 
                 Log.d("NearbyConnection", "onConnectionInitiated")
 
-                this@NearbyConnectionModule.sendEvent(ON_CONNECTION_INITIATED, data)
+                this@ExpoNearbyConnectionsModule.sendEvent(ON_CONNECTION_INITIATED, data)
             }
         }
 
@@ -223,7 +223,7 @@ class ExpoNearbyConnectionsModule : Module() {
                 Log.d("NearbyConnection", "onEndpointFound")
                 Log.d("NearbyConnection", "endpointInfo: ${String(info.endpointInfo)}")
 
-                this@NearbyConnectionModule.sendEvent(ON_ENDPOINT_FOUND, data)
+                this@ExpoNearbyConnectionsModule.sendEvent(ON_ENDPOINT_FOUND, data)
             }
 
             override fun onEndpointLost(endpointId: String) {
@@ -234,7 +234,7 @@ class ExpoNearbyConnectionsModule : Module() {
 
                 Log.d("onEndpointLost", "onEndpointLost")
 
-                this@NearbyConnectionModule.sendEvent(ON_ENDPOINT_LOST, data)
+                this@ExpoNearbyConnectionsModule.sendEvent(ON_ENDPOINT_LOST, data)
             }
         }
 
@@ -267,7 +267,7 @@ class ExpoNearbyConnectionsModule : Module() {
 
             Log.d("onPayloadReceived", "onPayloadReceived")
 
-            this@NearbyConnectionModule.sendEvent(ON_PAYLOAD_RECEIVED, data)
+            this@ExpoNearbyConnectionsModule.sendEvent(ON_PAYLOAD_RECEIVED, data)
         }
 
         override fun onPayloadTransferUpdate(
@@ -284,7 +284,7 @@ class ExpoNearbyConnectionsModule : Module() {
 
             Log.d("onPayloadTransferUpdate", "onPayloadTransferUpdate")
 
-            this@NearbyConnectionModule.sendEvent(ON_PAYLOAD_TRANSFER_UPDATE, data)
+            this@ExpoNearbyConnectionsModule.sendEvent(ON_PAYLOAD_TRANSFER_UPDATE, data)
         }
     }
 }
