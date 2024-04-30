@@ -40,7 +40,7 @@ class ExpoNearbyConnectionsModule : Module() {
             return@AsyncFunction isAvailable == ConnectionResult.SUCCESS
         }
 
-        AsyncFunction("startAdvertising") { endpointName: String, serviceId: String, strategy: Number, promise: Promise ->
+        AsyncFunction("startAdvertising") { endpointName: String, serviceId: String, strategy: Double, promise: Promise ->
             connectionsClient.startAdvertising(
                 endpointName,
                 serviceId,
@@ -62,7 +62,7 @@ class ExpoNearbyConnectionsModule : Module() {
             return@AsyncFunction null
         }
 
-        AsyncFunction("startDiscovery") { serviceId: String, strategy: Number, promise: Promise ->
+        AsyncFunction("startDiscovery") { serviceId: String, strategy: Double, promise: Promise ->
             connectionsClient.startDiscovery(
                 serviceId,
                 endpointDiscoveryCallback,
@@ -148,7 +148,7 @@ class ExpoNearbyConnectionsModule : Module() {
             "React Application Context is null"
         }
 
-    private fun getStrategy(strategy: Number): Strategy {
+    private fun getStrategy(strategy: Double): Strategy {
         return when (strategy.toInt()) {
             1 -> Strategy.P2P_CLUSTER
             2 -> Strategy.P2P_STAR
