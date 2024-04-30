@@ -14,15 +14,14 @@ export const nearbyConnectionsModule = requireNativeModule(
   "NearbyConnections"
 ) as NearbyConnectionsNativeModule;
 
-// It creates an event emitter that is used to emit events to listeners.
-export const nearbyConnectionsEmitter = new EventEmitter(
-  (nearbyConnectionsModule as any) ?? NativeModulesProxy.ExpoNearbyConnections
-);
-
 export const nearbyConnectionGenericListener = <T>(
   eventName: NearbyConnectionEvents,
   callback?: (data: T) => void
 ): Function => {
+  // It creates an event emitter that is used to emit events to listeners.
+  const nearbyConnectionsEmitter = new EventEmitter(
+    (nearbyConnectionsModule as any) ?? NativeModulesProxy.ExpoNearbyConnections
+  );
   const eventListener = nearbyConnectionsEmitter.addListener<T>(
     eventName,
     (data) => callback?.(data)
