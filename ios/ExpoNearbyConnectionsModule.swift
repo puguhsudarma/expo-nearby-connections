@@ -1,44 +1,125 @@
 import ExpoModulesCore
+import MultipeerConnectivity
 
 public class ExpoNearbyConnectionsModule: Module {
-  // Each module class must implement the definition function. The definition consists of components
-  // that describes the module's functionality and behavior.
-  // See https://docs.expo.dev/modules/module-api for more details about available components.
-  public func definition() -> ModuleDefinition {
-    // Sets the name of the module that JavaScript code will use to refer to the module. Takes a string as an argument.
-    // Can be inferred from module's class name, but it's recommended to set it explicitly for clarity.
-    // The module will be accessible from `requireNativeModule('ExpoNearbyConnections')` in JavaScript.
-    Name("ExpoNearbyConnections")
+    public func definition() -> ModuleDefinition {
+        Events(
+            ON_PEER_FOUND,
+            ON_PEER_LOST,
+            ON_INVITATION_RECIEVED,
+            ON_CONNECTED,
+            ON_DISCONNECTED,
+            ON_TEXT_RECEIVED
+        )
+        
+        Name(MODULE_NAME)
+        
+        var nearbyConnection = MultipeerConnectivityModule(self)
+        
+        AsyncFunction("isPlayServicesAvailable") { () -> Bool in
+          return nearbyConnection.isPlayServicesAvailable()
+        }
+        
+        AsyncFunction("startAdvertise") { (name: String) -> String in
+            var peer = nearbyConnection.startAdvertise(name)
 
-    // Sets constant properties on the module. Can take a dictionary or a closure that returns a dictionary.
-    Constants([
-      "PI": Double.pi
-    ])
+            return String(peer.hash)
+        }
 
-    // Defines event names that the module can send to JavaScript.
-    Events("onChange")
-
-    // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
-    Function("hello") {
-      return "Hello world! 👋"
+        AsyncFunction("stopAdvertise") { () -> Void in
+            return nearbyConnection.stopAdvertise()
+        }
+        
+        AsyncFunction("startDiscover") { (name: String) -> String in
+            var peer = nearbyConnection.startDiscover(name)
+            
+            return String(peer.hash)
+        }
+        
+        AsyncFunction("stopDiscover") { () -> Void in
+            return nearbyConnection.stopDiscover()
+        }
+        
+        AsyncFunction("requestConnection") { (name: String, peerId: String, timeoutInSecond: Int?, promise: Promise) -> Void in
+            do {
+                try nearbyConnection.requestConnection(name, toPeer: peerId, timeoutInSecond as NSNumber?)
+                promise.resolve(nil)
+            } catch {
+                promise.reject(error)
+            }
+        }
+        
+        AsyncFunction("acceptConnection") { (peerId: String, promise: Promise) -> Void in
+            do {
+                try nearbyConnection.acceptConnection(peerId)
+                promise.resolve(nil)
+            } catch {
+                promise.reject(error)
+            }
+        }
+        
+        AsyncFunction("rejectConnection") { (peerId: String, promise: Promise) -> Void in
+            do {
+                try nearbyConnection.rejectConnection(peerId)
+                promise.resolve(nil)
+            } catch {
+                promise.reject(error)
+            }
+        }
+        
+        AsyncFunction("disconnect") { (peerId: String) -> Void in
+            return nearbyConnection.disconnect(toPeer: peerId)
+        }
+        
+        AsyncFunction("sendText") { (peerId: String, text: String, promise: Promise) -> Void in
+            do {
+                try nearbyConnection.sendText(toPeer: peerId, text)
+                promise.resolve(nil)
+            } catch {
+                promise.reject(error)
+            }
+        }
     }
+}
 
-    // Defines a JavaScript function that always returns a Promise and whose native code
-    // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("setValueAsync") { (value: String) in
-      // Send an event to JavaScript.
-      self.sendEvent("onChange", [
-        "value": value
-      ])
+extension ExpoNearbyConnectionsModule: MultipeerConnectivityCallbackDelegate {
+    func onPeerFound(_ peerId: String, _ name: String) {
+        sendEvent(ON_PEER_FOUND, [
+            peerId: peerId,
+            "name": name
+        ])
     }
-
-    // Enables the module to be used as a native view. Definition components that are accepted as part of the
-    // view definition: Prop, Events.
-    View(ExpoNearbyConnectionsView.self) {
-      // Defines a setter for the `name` prop.
-      Prop("name") { (view: ExpoNearbyConnectionsView, prop: String) in
-        print(prop)
-      }
+    
+    func onPeerLost(_ peerId: String) {
+        sendEvent(ON_PEER_LOST, [
+            peerId: peerId
+        ])
     }
-  }
+    
+    func onInvitationReceived(fromPeer peerId: String, _ name: String) {
+        sendEvent(ON_INVITATION_RECIEVED, [
+            peerId: peerId,
+            "name": name
+        ])
+    }
+    
+    func onConnected(fromPeer peerId: String, _ name: String) {
+        sendEvent(ON_CONNECTED, [
+            peerId: peerId,
+            "name": name
+        ])
+    }
+    
+    func onDisconnected(_ peerId: String) {
+        sendEvent(ON_DISCONNECTED, [
+            peerId: peerId
+        ])
+    }
+    
+    func onTextReceived(toDestination peerId: String, _ text: String) {
+        sendEvent(ON_TEXT_RECEIVED, [
+            peerId: peerId,
+            "text": text
+        ])
+    }
 }
