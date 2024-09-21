@@ -7,12 +7,14 @@
 
 import Foundation
 
-let ON_PEER_FOUND = "onPeerFound"
-let ON_PEER_LOST = "onPeerLost"
-let ON_INVITATION_RECIEVED = "onInvitationReceived"
-let ON_CONNECTED = "onConnected"
-let ON_DISCONNECTED = "onDisconnected"
-let ON_TEXT_RECEIVED = "onTextReceived"
+enum EventNames: String, CaseIterable {
+    case ON_PEER_FOUND = "onPeerFound"
+    case ON_PEER_LOST = "onPeerLost"
+    case ON_INVITATION_RECIEVED = "onInvitationReceived"
+    case ON_CONNECTED = "onConnected"
+    case ON_DISCONNECTED = "onDisconnected"
+    case ON_TEXT_RECEIVED = "onTextReceived"
+}
 
 let MODULE_NAME="ExpoNearbyConnectionsModule"
 

@@ -24,7 +24,7 @@ public class MultipeerConnectivityModule: NSObject {
     }
     
     public func isPlayServicesAvailable() -> Bool {
-       return true
+        return true
     }
     
     public func startAdvertise(_ name: String) -> MCPeerID {
@@ -80,7 +80,7 @@ public class MultipeerConnectivityModule: NSObject {
         
         self.session = MCSession(peer: peerID.value, securityIdentity: nil, encryptionPreference: .required)
         session?.delegate = self
-
+        
         browser?.invitePeer(peerID.value, to: session!, withContext: contextString, timeout: TimeInterval(truncating: timeoutInSecond ?? 30))
     }
     
@@ -116,13 +116,13 @@ public class MultipeerConnectivityModule: NSObject {
         guard let data = text.data(using: .utf8) else {
             throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "SendText: Invalid text data."])
         }
-            
+        
         guard let peer = invitedPeers.first(where: {
             $0.key == peerId
         }) else {
             throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "SendText: Not found target peer."])
         }
-            
+        
         try session?.send(data, toPeers: [peer.value.peerId], with: .unreliable)
     }
 }

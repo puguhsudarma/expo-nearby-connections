@@ -3,29 +3,22 @@ import MultipeerConnectivity
 
 public class ExpoNearbyConnectionsModule: Module {
     public func definition() -> ModuleDefinition {
-        Events(
-            ON_PEER_FOUND,
-            ON_PEER_LOST,
-            ON_INVITATION_RECIEVED,
-            ON_CONNECTED,
-            ON_DISCONNECTED,
-            ON_TEXT_RECEIVED
-        )
+        Events(EventNames.allCases.map { $0.rawValue })
         
         Name(MODULE_NAME)
         
         var nearbyConnection = MultipeerConnectivityModule(self)
         
         AsyncFunction("isPlayServicesAvailable") { () -> Bool in
-          return nearbyConnection.isPlayServicesAvailable()
+            return nearbyConnection.isPlayServicesAvailable()
         }
         
         AsyncFunction("startAdvertise") { (name: String) -> String in
             var peer = nearbyConnection.startAdvertise(name)
-
+            
             return String(peer.hash)
         }
-
+        
         AsyncFunction("stopAdvertise") { () -> Void in
             return nearbyConnection.stopAdvertise()
         }
@@ -83,41 +76,45 @@ public class ExpoNearbyConnectionsModule: Module {
 }
 
 extension ExpoNearbyConnectionsModule: MultipeerConnectivityCallbackDelegate {
+    func sendEvent(_ eventName: EventNames, _ body: [String: Any?] = [:]) {
+        sendEvent(eventName.rawValue, body)
+    }
+    
     func onPeerFound(_ peerId: String, _ name: String) {
-        sendEvent(ON_PEER_FOUND, [
+        sendEvent(.ON_PEER_FOUND, [
             peerId: peerId,
             "name": name
         ])
     }
     
     func onPeerLost(_ peerId: String) {
-        sendEvent(ON_PEER_LOST, [
+        sendEvent(.ON_PEER_LOST, [
             peerId: peerId
         ])
     }
     
     func onInvitationReceived(fromPeer peerId: String, _ name: String) {
-        sendEvent(ON_INVITATION_RECIEVED, [
+        sendEvent(.ON_INVITATION_RECIEVED, [
             peerId: peerId,
             "name": name
         ])
     }
     
     func onConnected(fromPeer peerId: String, _ name: String) {
-        sendEvent(ON_CONNECTED, [
+        sendEvent(.ON_CONNECTED, [
             peerId: peerId,
             "name": name
         ])
     }
     
     func onDisconnected(_ peerId: String) {
-        sendEvent(ON_DISCONNECTED, [
+        sendEvent(.ON_DISCONNECTED, [
             peerId: peerId
         ])
     }
     
     func onTextReceived(toDestination peerId: String, _ text: String) {
-        sendEvent(ON_TEXT_RECEIVED, [
+        sendEvent(.ON_TEXT_RECEIVED, [
             peerId: peerId,
             "text": text
         ])
