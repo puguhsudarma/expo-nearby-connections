@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "expo-nearby-connections-example",
+    "name": "Nearby Connections Example",
     "slug": "expo-nearby-connections-example",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,9 +11,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "expo.modules.nearbyconnections.example"
@@ -27,6 +25,15 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "../app.plugin.js",
+        {
+          "bonjourServicesName": "nearbyConnectionExample",
+          "localNetworkUsagePermissionText": "$(PRODUCT_NAME) need access to your local network to discover nearby devices"
+        }
+      ]
+    ]
   }
 }
