@@ -1,11 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../../components/button";
+import { useNavigation } from "../../hooks/use-navigation";
+import { useNearbyConnection } from "../../hooks/use-nearby-connection";
 
 interface Props {}
 
 export const MainScreen: React.FC<Props> = () => {
+  const { startAdvertise, startDiscovery } = useNearbyConnection();
+  const [name, setName] = useState<string>("");
+  const navigation = useNavigation<"main">();
+
+  const handleCreateChannel = () => {
+    startAdvertise(name).then((peerId) => {
+      navigation.navigate("channelList", {
+        name,
+      });
+    });
+  };
+
+  const handleJoinChannel = () => {
+    startDiscovery(name).then(() => {
+      navigation.navigate("chat", {
+        name,
+      });
+    });
+  };
+
   return (
     <View
       style={{
@@ -40,9 +62,13 @@ export const MainScreen: React.FC<Props> = () => {
         }}
         underlineColorAndroid="transparent"
         placeholder="Your name"
+        value={name}
+        onChangeText={setName}
       />
 
-      <Button onPress={() => {}}>Create channel</Button>
+      <Button disabled={!name} onPress={handleCreateChannel}>
+        Create channel
+      </Button>
 
       <View
         style={{
@@ -82,7 +108,9 @@ export const MainScreen: React.FC<Props> = () => {
         />
       </View>
 
-      <Button onPress={() => {}}>Join a channel</Button>
+      <Button disabled={!name} onPress={handleJoinChannel}>
+        Join a channel
+      </Button>
     </View>
   );
 };

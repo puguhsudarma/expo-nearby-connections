@@ -1,13 +1,36 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import React from "react";
+import { PeerFound } from "expo-nearby-connections/types/nearby-connections.types";
+import React, { useEffect } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Header } from "../../components/header";
+import { useNavigation } from "../../hooks/use-navigation";
+import { useNearbyConnection } from "../../hooks/use-nearby-connection";
+import { useParam } from "../../hooks/use-param";
 
 interface Props {}
 
 export const ChannelListScreen: React.FC<Props> = () => {
+  const { stopDiscovery, requestConnection, discoveredPeers } =
+    useNearbyConnection();
+  const navigation = useNavigation<"channelList">();
+  const param = useParam<"channelList">();
+  const name = param.params.name;
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    return () => {
+      stopDiscovery();
+    };
+  }, []);
+
+  const handleItemPress = (peer: PeerFound) => {
+    requestConnection(name, peer.peerId).then(() => {
+      navigation.navigate("chat", {
+        name,
+      });
+    });
+  };
+
   return (
     <View
       style={{
@@ -18,16 +41,14 @@ export const ChannelListScreen: React.FC<Props> = () => {
       <Header>Channel List</Header>
 
       <FlatList
-        data={[
-          1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-        ]}
+        data={discoveredPeers}
         ListHeaderComponent={() => <View style={{ height: 16 }} />}
         ListFooterComponent={() => (
           <View style={{ height: insets.bottom + 16 }} />
         )}
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => {}}
+            onPress={() => handleItemPress(item)}
             activeOpacity={0.8}
             style={{
               flexDirection: "row",
@@ -47,11 +68,11 @@ export const ChannelListScreen: React.FC<Props> = () => {
                 fontWeight: "bold",
               }}
             >
-              Channel {item}
+              Channel {item.name}
             </Text>
           </TouchableOpacity>
         )}
-        keyExtractor={(item) => item.toString()}
+        keyExtractor={(item) => item.peerId}
       />
     </View>
   );
