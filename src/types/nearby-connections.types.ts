@@ -67,7 +67,7 @@ export interface Connected {
 export type OnConnected = (data: Connected) => void;
 
 export interface Disconnected {
-  endpointId: string;
+  peerId: string;
 }
 
 export type OnDisconnected = (data: Disconnected) => void;
