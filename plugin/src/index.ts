@@ -10,25 +10,22 @@ interface Props {
   localNetworkUsagePermissionText?: string;
 }
 
-const toCamelCase = (str: string) => {
+function toKebabCase(str: string): string {
   return str
-    .toLowerCase() // Convert the entire string to lowercase
-    .replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, (match, index) =>
-      index === 0 ? match.toLowerCase() : match.toUpperCase().trim()
-    );
-};
+    .replace(/([a-z])([A-Z])/g, "$1 $2") // Insert space between camelCase words
+    .replace(/[\s_]+/g, "-") // Replace spaces or underscores with hyphens
+    .replace(/[^a-zA-Z0-9-]/g, "") // Remove non-alphanumeric characters except hyphen
+    .toLowerCase(); // Convert to lowercase
+}
 
 const withNSBonjourServicesInfoPlist: ConfigPlugin<Props> = (
   config,
   { bonjourServicesName }
 ) => {
   return withInfoPlist(config, (plistConfig) => {
-    const name = bonjourServicesName || toCamelCase(config.name);
+    const name = toKebabCase(bonjourServicesName || config.name);
 
-    plistConfig.modResults.NSBonjourServices = [
-      `_${name}._tcp`,
-      `_${name}._udp`,
-    ];
+    plistConfig.modResults.NSBonjourServices = [`_${name}._tcp`];
 
     return plistConfig;
   });

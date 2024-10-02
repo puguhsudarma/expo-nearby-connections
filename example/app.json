@@ -14,7 +14,11 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "expo.modules.nearbyconnections.example"
+      "bundleIdentifier": "expo.modules.nearbyconnections.example",
+      "infoPlist": {
+        "NSBluetoothAlwaysUsageDescription": "$(PRODUCT_NAME) need access to your local network to discover nearby devices",
+        "NSBluetoothPeripheralUsageDescription": "$(PRODUCT_NAME) need access to your local network to discover nearby devices"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -28,16 +32,16 @@
     },
     "plugins": [
       [
-        "../app.plugin.js",
-        {
-          "bonjourServicesName": "nearbyConnectionExample",
-          "localNetworkUsagePermissionText": "$(PRODUCT_NAME) need access to your local network to discover nearby devices"
-        }
-      ],
-      [
         "react-native-permissions",
         {
           "iosPermissions": ["Bluetooth"]
+        }
+      ],
+      [
+        "../app.plugin.js",
+        {
+          "bonjourServicesName": "nearby-example",
+          "localNetworkUsagePermissionText": "$(PRODUCT_NAME) need access to your local network to discover nearby devices"
         }
       ]
     ]
