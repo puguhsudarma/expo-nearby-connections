@@ -18,11 +18,11 @@ enum EventNames: String, CaseIterable {
 
 let MODULE_NAME="ExpoNearbyConnectionsModule"
 
-protocol MultipeerConnectivityCallbackDelegate {
-    func onPeerFound(_ peerId: String, _ name: String) -> Void
-    func onPeerLost(_ peerId: String) -> Void
-    func onInvitationReceived(fromPeer peerId: String, _ name: String) -> Void
-    func onConnected(fromPeer peerId: String, _ name: String) -> Void
-    func onDisconnected(_ peerId: String) -> Void
-    func onTextReceived(toDestination peerId: String, _ text: String) -> Void
+protocol NearbyConnectionCallbackDelegate {
+    func onPeerFound(fromPeerId peerId: String, fromPeerName name: String) -> Void
+    func onPeerLost(fromPeerId peerId: String) -> Void
+    func onInvitationReceived(fromPeerId peerId: String, fromPeerName name: String) -> Void
+    func onConnected(fromPeerId peerId: String, fromPeerName name: String) -> Void
+    func onDisconnected(fromPeerId peerId: String) -> Void
+    func onTextReceived(fromPeerId peerId: String, payload text: String) -> Void
 }

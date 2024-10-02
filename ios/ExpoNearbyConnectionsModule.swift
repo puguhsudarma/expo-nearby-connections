@@ -7,14 +7,14 @@ public class ExpoNearbyConnectionsModule: Module {
         
         Name(MODULE_NAME)
         
-        var nearbyConnection = MultipeerConnectivityModule(self)
+        let nearbyConnection = MultipeerConnectivityModule(delegate: self)
         
         AsyncFunction("isPlayServicesAvailable") { () -> Bool in
-            return nearbyConnection.isPlayServicesAvailable()
+            return true
         }
         
         AsyncFunction("startAdvertise") { (name: String) -> String in
-            var peer = nearbyConnection.startAdvertise(name)
+            let peer = nearbyConnection.startAdvertise(name)
             
             return String(peer.hash)
         }
@@ -23,19 +23,19 @@ public class ExpoNearbyConnectionsModule: Module {
             return nearbyConnection.stopAdvertise()
         }
         
-        AsyncFunction("startDiscover") { (name: String) -> String in
-            var peer = nearbyConnection.startDiscover(name)
+        AsyncFunction("startDiscovery") { (name: String) -> String in
+            let peer = nearbyConnection.startDiscovery(name)
             
             return String(peer.hash)
         }
         
-        AsyncFunction("stopDiscover") { () -> Void in
-            return nearbyConnection.stopDiscover()
+        AsyncFunction("stopDiscovery") { () -> Void in
+            return nearbyConnection.stopDiscovery()
         }
         
         AsyncFunction("requestConnection") { (name: String, peerId: String, timeoutInSecond: Int?, promise: Promise) -> Void in
             do {
-                try nearbyConnection.requestConnection(name, toPeer: peerId, timeoutInSecond as NSNumber?)
+                try nearbyConnection.requestConnection(name, toPeer: peerId, timeout: timeoutInSecond as NSNumber?)
                 promise.resolve(nil)
             } catch {
                 promise.reject(error)
@@ -44,7 +44,7 @@ public class ExpoNearbyConnectionsModule: Module {
         
         AsyncFunction("acceptConnection") { (peerId: String, promise: Promise) -> Void in
             do {
-                try nearbyConnection.acceptConnection(peerId)
+                try nearbyConnection.acceptConnection(toDiscoveryPeer: peerId)
                 promise.resolve(nil)
             } catch {
                 promise.reject(error)
@@ -53,7 +53,7 @@ public class ExpoNearbyConnectionsModule: Module {
         
         AsyncFunction("rejectConnection") { (peerId: String, promise: Promise) -> Void in
             do {
-                try nearbyConnection.rejectConnection(peerId)
+                try nearbyConnection.rejectConnection(toDiscoveryPeer: peerId)
                 promise.resolve(nil)
             } catch {
                 promise.reject(error)
@@ -75,47 +75,47 @@ public class ExpoNearbyConnectionsModule: Module {
     }
 }
 
-extension ExpoNearbyConnectionsModule: MultipeerConnectivityCallbackDelegate {
+extension ExpoNearbyConnectionsModule: NearbyConnectionCallbackDelegate {
     func sendEvent(_ eventName: EventNames, _ body: [String: Any?] = [:]) {
         sendEvent(eventName.rawValue, body)
     }
     
-    func onPeerFound(_ peerId: String, _ name: String) {
+    func onPeerFound(fromPeerId peerId: String, fromPeerName name: String) {
         sendEvent(.ON_PEER_FOUND, [
-            peerId: peerId,
+            "peerId": peerId,
             "name": name
         ])
     }
     
-    func onPeerLost(_ peerId: String) {
+    func onPeerLost(fromPeerId peerId: String) {
         sendEvent(.ON_PEER_LOST, [
-            peerId: peerId
+            "peerId": peerId
         ])
     }
     
-    func onInvitationReceived(fromPeer peerId: String, _ name: String) {
+    func onInvitationReceived(fromPeerId peerId: String, fromPeerName name: String) {
         sendEvent(.ON_INVITATION_RECIEVED, [
-            peerId: peerId,
+            "peerId": peerId,
             "name": name
         ])
     }
     
-    func onConnected(fromPeer peerId: String, _ name: String) {
+    func onConnected(fromPeerId peerId: String, fromPeerName name: String) {
         sendEvent(.ON_CONNECTED, [
-            peerId: peerId,
+            "peerId": peerId,
             "name": name
         ])
     }
     
-    func onDisconnected(_ peerId: String) {
+    func onDisconnected(fromPeerId peerId: String) {
         sendEvent(.ON_DISCONNECTED, [
-            peerId: peerId
+            "peerId": peerId
         ])
     }
     
-    func onTextReceived(toDestination peerId: String, _ text: String) {
+    func onTextReceived(fromPeerId peerId: String, payload text: String) {
         sendEvent(.ON_TEXT_RECEIVED, [
-            peerId: peerId,
+            "peerId": peerId,
             "text": text
         ])
     }

@@ -1,115 +1,121 @@
 import MultipeerConnectivity
 
 public class MultipeerConnectivityModule: NSObject {
-    private var peerId: MCPeerID?
+    private var myPeerId: MCPeerID?
     private var advertiser: MCNearbyServiceAdvertiser?
-    private var browser: MCNearbyServiceBrowser?
+    private var discovery: MCNearbyServiceBrowser?
     private var session: MCSession?
     private var discoveredPeers: Dictionary<String, MCPeerID> = [:]
     private var invitedPeers: Dictionary<String, (
         peerId: MCPeerID,
-        invitationHandler: (Bool, MCSession?) -> Void,
-        isConnected: Bool
+        invitationHandler: (Bool, MCSession?) -> Void
     )> = [:]
-    private var callbackDelegate: MultipeerConnectivityCallbackDelegate
+    private var callbackDelegate: NearbyConnectionCallbackDelegate
     
-    init(_ callbacks: MultipeerConnectivityCallbackDelegate) {
+    init(delegate callbacks: NearbyConnectionCallbackDelegate) {
         self.callbackDelegate = callbacks
     }
     
     deinit {
-        session?.disconnect()
-        advertiser?.stopAdvertisingPeer()
-        browser?.stopBrowsingForPeers()
-    }
-    
-    public func isPlayServicesAvailable() -> Bool {
-        return true
+        self.advertiser?.stopAdvertisingPeer()
+        self.discovery?.stopBrowsingForPeers()
+        self.session?.disconnect()
     }
     
     public func startAdvertise(_ name: String) -> MCPeerID {
         let peerID = MCPeerID(displayName: name)
-        self.peerId = peerID
+        self.myPeerId = peerID
         let discoveryInfo: Dictionary<String, String> = [
             "peerId": String(peerID.hash),
             "name": name
         ]
         let serviceType = InfoPlistParser.getServiceType()
         
-        advertiser = MCNearbyServiceAdvertiser(peer: peerID, discoveryInfo: discoveryInfo, serviceType: serviceType);
-        advertiser!.delegate = self
-        advertiser!.startAdvertisingPeer()
+        self.advertiser = MCNearbyServiceAdvertiser(peer: peerID, discoveryInfo: discoveryInfo, serviceType: serviceType);
+        self.advertiser?.delegate = self
+        
+        self.advertiser?.startAdvertisingPeer()
         
         return peerID
     }
     
     public func stopAdvertise() {
-        advertiser!.stopAdvertisingPeer()
-        self.peerId = nil
-        self.advertiser = nil
+        self.advertiser?.stopAdvertisingPeer()
     }
     
-    public func startDiscover(_ name: String) -> MCPeerID {
+    public func startDiscovery(_ name: String) -> MCPeerID {
         let peerID = MCPeerID(displayName: name)
-        self.peerId = peerID
-        
+        self.myPeerId = peerID
         let serviceType = InfoPlistParser.getServiceType()
         
-        browser = MCNearbyServiceBrowser(peer: peerID, serviceType: serviceType)
-        browser!.delegate = self
+        self.discovery = MCNearbyServiceBrowser(peer: peerID, serviceType: serviceType)
+        self.discovery?.delegate = self
         
-        browser!.startBrowsingForPeers()
+        self.discovery?.startBrowsingForPeers()
         
         return peerID
     }
     
-    public func stopDiscover() {
-        browser!.stopBrowsingForPeers()
-        self.peerId = nil
-        self.browser = nil
+    public func stopDiscovery() {
+        self.discovery?.stopBrowsingForPeers()
     }
     
-    public func requestConnection(_ name: String, toPeer advertisePeerId: String, _ timeoutInSecond: NSNumber?) throws {
-        let contextString = "{name: \(name), peerId: \(String(peerId?.hash ?? 0))}".data(using: .utf8)
+    public func requestConnection(_ name: String, toPeer advertisePeerId: String, timeout timeoutInSeconds: NSNumber?) throws {
+        guard let myPeerId = self.myPeerId else {
+            throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "RequestConnection: Not found my peer."])
+        }
         
-        guard let peerID = discoveredPeers.first(where: {
+        let contextString = "{name: \(name), peerId: \(String(myPeerId.hash))}".data(using: .utf8)
+        let timeout = TimeInterval(truncating: timeoutInSeconds ?? 30)
+        
+        guard let targetPeerId = self.discoveredPeers.first(where: {
             $0.key == advertisePeerId
-        }) else {
+        })?.value else {
             throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "RequestConnection: Not found target peer."])
         }
         
-        self.session = MCSession(peer: peerID.value, securityIdentity: nil, encryptionPreference: .required)
-        session?.delegate = self
+        self.session = MCSession(peer: myPeerId, securityIdentity: nil, encryptionPreference: .required)
+        self.session?.delegate = self
         
-        browser?.invitePeer(peerID.value, to: session!, withContext: contextString, timeout: TimeInterval(truncating: timeoutInSecond ?? 30))
+        self.discovery?.invitePeer(targetPeerId, to: self.session!, withContext: contextString, timeout: timeout)
     }
     
-    public func acceptConnection(_ peerId: String) throws {
-        guard let invitedPeer = invitedPeers.first(where: {
+    public func acceptConnection(toDiscoveryPeer peerId: String) throws {
+        guard let invitedPeer = self.invitedPeers.first(where: {
             $0.key == peerId
-        }) else {
+        })?.value else {
             throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "AcceptConnection: Not found target peer."])
         }
         
-        invitedPeer.value.invitationHandler(true, session)
-        invitedPeers[peerId]?.isConnected = true
+        guard let myPeerId = self.myPeerId else {
+            throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "AcceptConnection: Not found my peer."])
+        }
+        
+        self.session = MCSession(peer: myPeerId, securityIdentity: nil, encryptionPreference: .required)
+        self.session?.delegate = self
+        
+        invitedPeer.invitationHandler(true, self.session)
     }
     
-    public func rejectConnection(_ peerId: String) throws {
-        guard let invitedPeer = invitedPeers.first(where: {
+    public func rejectConnection(toDiscoveryPeer peerId: String) throws {
+        guard let invitedPeer = self.invitedPeers.first(where: {
             $0.key == peerId
-        }) else {
+        })?.value else {
             throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "RejectConnection: Not found target peer."])
         }
         
-        invitedPeer.value.invitationHandler(false, session)
-        invitedPeers[peerId]?.isConnected = false
+        guard let myPeerId = self.myPeerId else {
+            throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "RejectConnection: Not found my peer."])
+        }
+        
+        self.session = MCSession(peer: myPeerId, securityIdentity: nil, encryptionPreference: .required)
+        self.session?.delegate = self
+        
+        invitedPeer.invitationHandler(false, self.session)
     }
     
     public func disconnect(toPeer peerId: String) {
-        session?.disconnect()
-        session = nil
-        invitedPeers.removeValue(forKey: peerId)
+        self.session?.disconnect()
     }
     
     public func sendText(toPeer peerId: String, _ text: String) throws {
@@ -117,13 +123,13 @@ public class MultipeerConnectivityModule: NSObject {
             throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "SendText: Invalid text data."])
         }
         
-        guard let peer = invitedPeers.first(where: {
+        guard let targetPeerId = self.invitedPeers.first(where: {
             $0.key == peerId
-        }) else {
+        })?.value.peerId else {
             throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "SendText: Not found target peer."])
         }
         
-        try session?.send(data, toPeers: [peer.value.peerId], with: .unreliable)
+        try self.session?.send(data, toPeers: [targetPeerId], with: .reliable)
     }
 }
 
@@ -133,8 +139,10 @@ extension MultipeerConnectivityModule: MCNearbyServiceAdvertiserDelegate {
     }
     
     public func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
-        self.invitedPeers[String(peerID.hash)] = (peerID, invitationHandler, false)
-        callbackDelegate.onInvitationReceived(fromPeer: String(peerID.hash), peerID.displayName)
+        let peerIdHash = String(peerID.hash)
+        
+        self.invitedPeers[peerIdHash] = (peerId: peerID, invitationHandler: invitationHandler)
+        self.callbackDelegate.onInvitationReceived(fromPeerId: peerIdHash, fromPeerName: peerID.displayName)
     }
 }
 
@@ -144,34 +152,43 @@ extension MultipeerConnectivityModule: MCNearbyServiceBrowserDelegate {
     }
     
     public func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
-        self.discoveredPeers[String(peerID.hash)] = peerID
-        callbackDelegate.onPeerFound(String(peerID.hash), peerID.displayName)
+        let peerIdHash = String(peerID.hash)
+        
+        self.discoveredPeers[peerIdHash] = peerID
+        self.callbackDelegate.onPeerFound(fromPeerId: peerIdHash, fromPeerName: peerID.displayName)
     }
     
     public func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-        self.discoveredPeers.removeValue(forKey: String(peerID.hash))
-        callbackDelegate.onPeerLost(String(peerID.hash))
+        let peerIdHash = String(peerID.hash)
+        
+        self.discoveredPeers.removeValue(forKey: peerIdHash)
+        self.callbackDelegate.onPeerLost(fromPeerId: peerIdHash)
     }
 }
 
 extension MultipeerConnectivityModule: MCSessionDelegate {
     public func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
+        let peerIdHash = String(peerID.hash)
+        
         switch state {
         case .connected:
-            callbackDelegate.onConnected(fromPeer: String(peerID.hash), peerID.displayName)
+            self.callbackDelegate.onConnected(fromPeerId: peerIdHash, fromPeerName: peerID.displayName)
         case .notConnected:
-            callbackDelegate.onDisconnected(String(peerID.hash))
+            self.callbackDelegate.onDisconnected(fromPeerId: peerIdHash)
         case .connecting:
             // TODO: Implement connecting
             break
         @unknown default:
+            // TODO: Implement unknown
             break
         }
     }
     
     public func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
+        let peerIdHash = String(peerID.hash)
         let text = String(decoding: data, as: UTF8.self)
-        callbackDelegate.onTextReceived(toDestination: String(peerID.hash), text)
+        
+        self.callbackDelegate.onTextReceived(fromPeerId: peerIdHash, payload: text)
     }
     
     public func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
