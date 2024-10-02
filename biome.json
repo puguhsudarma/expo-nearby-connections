@@ -1,0 +1,199 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.9.3/schema.json",
+	"vcs": { "enabled": false, "clientKind": "git", "useIgnoreFile": false },
+	"files": { "ignoreUnknown": false, "ignore": [] },
+	"formatter": { "enabled": true, "indentStyle": "tab" },
+	"organizeImports": { "enabled": true },
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": false,
+			"complexity": {
+				"noExtraBooleanCast": "warn",
+				"noUselessConstructor": "warn",
+				"noUselessLoneBlockStatements": "warn",
+				"noUselessRename": "warn",
+				"noUselessStringConcat": "warn",
+				"noUselessTernary": "warn",
+				"noVoid": "warn",
+				"noWith": "warn"
+			},
+			"correctness": {
+				"noConstAssign": "error",
+				"noConstantCondition": "warn",
+				"noEmptyCharacterClassInRegex": "warn",
+				"noEmptyPattern": "warn",
+				"noGlobalObjectCalls": "warn",
+				"noInnerDeclarations": "warn",
+				"noInvalidConstructorSuper": "warn",
+				"noNewSymbol": "error",
+				"noSelfAssign": "warn",
+				"noSwitchDeclarations": "warn",
+				"noUndeclaredVariables": "error",
+				"noUnreachable": "warn",
+				"noUnreachableSuper": "warn",
+				"noUnusedLabels": "warn",
+				"noUnusedVariables": "warn",
+				"useArrayLiterals": "warn",
+				"useExhaustiveDependencies": "warn",
+				"useHookAtTopLevel": "error",
+				"useIsNan": "error"
+			},
+			"security": { "noGlobalEval": "warn" },
+			"style": {
+				"noArguments": "warn",
+				"noCommaOperator": "warn",
+				"noImplicitBoolean": "warn",
+				"noVar": "warn",
+				"noYodaExpression": "warn",
+				"useBlockStatements": "warn",
+				"useConst": "warn",
+				"useFragmentSyntax": "warn",
+				"useThrowOnlyError": "warn"
+			},
+			"suspicious": {
+				"noAssignInExpressions": "warn",
+				"noCatchAssign": "warn",
+				"noCompareNegZero": "warn",
+				"noConfusingLabels": "warn",
+				"noControlCharactersInRegex": "off",
+				"noDebugger": "warn",
+				"noDoubleEquals": "warn",
+				"noDuplicateCase": "error",
+				"noDuplicateClassMembers": "error",
+				"noDuplicateJsxProps": "error",
+				"noDuplicateObjectKeys": "error",
+				"noDuplicateParameters": "error",
+				"noFallthroughSwitchClause": "warn",
+				"noFunctionAssign": "error",
+				"noGlobalAssign": "warn",
+				"noLabelVar": "warn",
+				"noRedeclare": "warn",
+				"noSelfCompare": "warn",
+				"noShadowRestrictedNames": "warn",
+				"noSparseArray": "warn",
+				"noUnsafeNegation": "warn",
+				"useGetterReturn": "warn",
+				"useValidTypeof": "error"
+			}
+		},
+		"ignore": ["**/build"]
+	},
+	"javascript": { "formatter": { "quoteStyle": "double" }, "globals": [] },
+	"overrides": [
+		{ "include": ["*.web.*"] },
+		{ "include": ["*.d.ts"], "linter": { "rules": {} } },
+		{ "include": ["*.js", "*.jsx"] },
+		{
+			"include": ["*.ts", "*.tsx", "*.d.ts"],
+			"linter": {
+				"rules": {
+					"complexity": {
+						"noBannedTypes": "error",
+						"noUselessConstructor": "warn"
+					},
+					"correctness": {
+						"noUndeclaredVariables": "off",
+						"noUnusedVariables": "warn"
+					},
+					"style": {
+						"useConsistentArrayType": {
+							"level": "warn",
+							"options": { "syntax": "shorthand" }
+						}
+					},
+					"suspicious": {
+						"noDuplicateClassMembers": "warn",
+						"noExtraNonNullAssertion": "warn",
+						"noRedeclare": "warn"
+					}
+				}
+			}
+		},
+		{ "include": ["*.d.ts"], "linter": { "rules": {} } },
+		{ "include": ["*.js", "*.jsx"] },
+		{
+			"include": ["*.ts", "*.tsx", "*.d.ts"],
+			"linter": {
+				"rules": {
+					"complexity": {
+						"noBannedTypes": "error",
+						"noUselessConstructor": "warn"
+					},
+					"correctness": {
+						"noUndeclaredVariables": "off",
+						"noUnusedVariables": "warn"
+					},
+					"style": {
+						"useConsistentArrayType": {
+							"level": "warn",
+							"options": { "syntax": "shorthand" }
+						}
+					},
+					"suspicious": {
+						"noDuplicateClassMembers": "warn",
+						"noExtraNonNullAssertion": "warn",
+						"noRedeclare": "warn"
+					}
+				}
+			}
+		},
+		{ "include": ["*.web.*"] },
+		{ "include": ["*.d.ts"], "linter": { "rules": {} } },
+		{ "include": ["*.js", "*.jsx"] },
+		{
+			"include": ["*.ts", "*.tsx", "*.d.ts"],
+			"linter": {
+				"rules": {
+					"complexity": {
+						"noBannedTypes": "error",
+						"noUselessConstructor": "warn"
+					},
+					"correctness": {
+						"noUndeclaredVariables": "off",
+						"noUnusedVariables": "warn"
+					},
+					"style": {
+						"useConsistentArrayType": {
+							"level": "warn",
+							"options": { "syntax": "shorthand" }
+						}
+					},
+					"suspicious": {
+						"noDuplicateClassMembers": "warn",
+						"noExtraNonNullAssertion": "warn",
+						"noRedeclare": "warn"
+					}
+				}
+			}
+		},
+		{ "include": ["*.d.ts"], "linter": { "rules": {} } },
+		{ "include": ["*.js", "*.jsx"] },
+		{
+			"include": ["*.ts", "*.tsx", "*.d.ts"],
+			"linter": {
+				"rules": {
+					"complexity": {
+						"noBannedTypes": "error",
+						"noUselessConstructor": "warn"
+					},
+					"correctness": {
+						"noUndeclaredVariables": "off",
+						"noUnusedVariables": "warn"
+					},
+					"style": {
+						"useConsistentArrayType": {
+							"level": "warn",
+							"options": { "syntax": "shorthand" }
+						}
+					},
+					"suspicious": {
+						"noDuplicateClassMembers": "warn",
+						"noExtraNonNullAssertion": "warn",
+						"noRedeclare": "warn"
+					}
+				}
+			}
+		}
+	]
+}
