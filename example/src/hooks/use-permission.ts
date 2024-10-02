@@ -6,6 +6,7 @@ import {
   requestMultiple,
   RESULTS,
 } from "react-native-permissions";
+import { safeAwait } from "../utilities/safe-await";
 
 async function checkAndRequestPermission(): Promise<boolean> {
   const permissions =

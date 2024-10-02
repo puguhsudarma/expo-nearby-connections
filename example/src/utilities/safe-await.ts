@@ -1,4 +1,4 @@
-async function safeAwait<T, E = Error>(
+export async function safeAwait<T, E = Error>(
   promise: Promise<T>
 ): Promise<[null, T] | [E, null]> {
   try {
