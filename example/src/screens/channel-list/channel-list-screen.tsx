@@ -1,79 +1,66 @@
-import { PeerFound } from "expo-nearby-connections/types/nearby-connections.types";
-import React, { useEffect } from "react";
-import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import { startDiscovery, stopDiscovery } from "expo-nearby-connections";
+import React, { useEffect, useState } from "react";
+import { FlatList, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Header } from "../../components/header";
+import { colors } from "../../constants/color";
+import { useConfirmConnection } from "../../hooks/use-confirm-connection";
+import { useDiscoveryListener } from "../../hooks/use-discovery-listener";
 import { useNavigation } from "../../hooks/use-navigation";
-import { useNearbyConnection } from "../../hooks/use-nearby-connection";
 import { useParam } from "../../hooks/use-param";
+import { Item } from "./item";
 
 interface Props {}
 
 export const ChannelListScreen: React.FC<Props> = () => {
-  const { stopDiscovery, requestConnection, discoveredPeers } =
-    useNearbyConnection();
   const navigation = useNavigation<"channelList">();
+  const [myPeerId, setMyPeerId] = useState("");
   const param = useParam<"channelList">();
   const name = param.params.name;
-  const insets = useSafeAreaInsets();
+  const { bottom } = useSafeAreaInsets();
+  const { discoveredPeers } = useDiscoveryListener();
+
+  useConfirmConnection({
+    isLoading: true,
+    acceptedCallback: (targetDevice) => {
+      navigation.navigate("chat", {
+        myDevice: {
+          peerId: myPeerId,
+          name,
+        },
+        targetDevice,
+      });
+    },
+  });
 
   useEffect(() => {
+    startDiscovery(name).then((peerId) => {
+      setMyPeerId(peerId);
+    });
+
     return () => {
       stopDiscovery();
     };
-  }, []);
-
-  const handleItemPress = (peer: PeerFound) => {
-    requestConnection(name, peer.peerId).then(() => {
-      navigation.navigate("chat", {
-        name,
-      });
-    });
-  };
+  }, [name]);
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: "#fff",
-      }}
-    >
+    <View style={styles.container}>
       <Header>Channel List</Header>
 
       <FlatList
         data={discoveredPeers}
+        keyExtractor={(item) => `${item.peerId}_${item.name}`}
         ListHeaderComponent={() => <View style={{ height: 16 }} />}
-        ListFooterComponent={() => (
-          <View style={{ height: insets.bottom + 16 }} />
-        )}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() => handleItemPress(item)}
-            activeOpacity={0.8}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              paddingHorizontal: 16,
-              paddingVertical: 16,
-              backgroundColor: "#f5f5f5",
-              marginHorizontal: 16,
-              marginBottom: 8,
-              borderRadius: 4,
-            }}
-          >
-            <Text
-              style={{
-                color: "#465775",
-                fontSize: 16,
-                fontWeight: "bold",
-              }}
-            >
-              Channel {item.name}
-            </Text>
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item.peerId}
+        ListFooterComponent={() => <View style={{ height: bottom + 16 }} />}
+        renderItem={({ item }) => <Item {...item} />}
       />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+});
