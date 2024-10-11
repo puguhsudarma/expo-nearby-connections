@@ -4,11 +4,12 @@ import React from "react";
 import { ChannelListScreen } from "../screens/channel-list/channel-list-screen";
 import { ChatScreen } from "../screens/chat/chat-screen";
 import { MainScreen } from "../screens/main/main-screen";
+import { BasePeer } from "expo-nearby-connections";
 
 export type RootStack = {
   main: undefined;
   channelList: { name: string };
-  chat: { name: string };
+  chat: { myDevice: BasePeer, targetDevice: BasePeer };
 };
 
 const Stack = createNativeStackNavigator<RootStack>();
