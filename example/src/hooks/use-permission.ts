@@ -1,10 +1,10 @@
 import React, { useCallback } from "react";
 import { Alert, Linking, Platform } from "react-native";
 import {
-  checkMultiple,
   PERMISSIONS,
-  requestMultiple,
   RESULTS,
+  checkMultiple,
+  requestMultiple,
 } from "react-native-permissions";
 import { safeAwait } from "../utilities/safe-await";
 
@@ -49,7 +49,7 @@ async function checkAndRequestPermission(): Promise<boolean> {
   return requestIsGranted;
 }
 
-export const useNearbyPermission = (isRequestImmediately = false) => {
+export const useNearbyPermission = () => {
   const [isGranted, setIsGranted] = React.useState(false);
 
   const requestPermissionHandler = useCallback(async () => {
@@ -78,10 +78,8 @@ export const useNearbyPermission = (isRequestImmediately = false) => {
   }, []);
 
   React.useEffect(() => {
-    if (isRequestImmediately) {
-      requestPermissionHandler();
-    }
-  }, [isRequestImmediately, requestPermissionHandler]);
+    requestPermissionHandler();
+  }, [requestPermissionHandler]);
 
   return { isGranted, requestPermissionHandler };
 };
