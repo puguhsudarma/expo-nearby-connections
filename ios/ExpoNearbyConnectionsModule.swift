@@ -2,21 +2,25 @@ import ExpoModulesCore
 import MultipeerConnectivity
 
 public class ExpoNearbyConnectionsModule: Module {
+    private var nearbyConnection: MultipeerConnectivityModule = MultipeerConnectivityModule()
+    
+    public func onCreate() {
+        self.nearbyConnection.delegate = self
+    }
+    
     public func definition() -> ModuleDefinition {
         Events(EventNames.allCases.map { $0.rawValue })
         
         Name(MODULE_NAME)
-        
-        let nearbyConnection = MultipeerConnectivityModule(delegate: self)
         
         AsyncFunction("isPlayServicesAvailable") { () -> Bool in
             return true
         }
         
         AsyncFunction("startAdvertise") { (name: String) -> String in
-            let peer = nearbyConnection.startAdvertise(name)
+            let myPeerId = self.nearbyConnection.startAdvertise(name)
             
-            return String(peer.hash)
+            return String(myPeerId.hash)
         }
         
         AsyncFunction("stopAdvertise") { () -> Void in
@@ -24,49 +28,49 @@ public class ExpoNearbyConnectionsModule: Module {
         }
         
         AsyncFunction("startDiscovery") { (name: String) -> String in
-            let peer = nearbyConnection.startDiscovery(name)
+            let myPeerId = nearbyConnection.startDiscovery(name)
             
-            return String(peer.hash)
+            return String(myPeerId.hash)
         }
         
         AsyncFunction("stopDiscovery") { () -> Void in
             return nearbyConnection.stopDiscovery()
         }
         
-        AsyncFunction("requestConnection") { (name: String, peerId: String, timeoutInSecond: Int?, promise: Promise) -> Void in
+        AsyncFunction("requestConnection") { (advertisePeerId: String, timeoutInSeconds: Int?, promise: Promise) -> Void in
             do {
-                try nearbyConnection.requestConnection(name, toPeer: peerId, timeout: timeoutInSecond as NSNumber?)
+                try nearbyConnection.requestConnection(to: advertisePeerId, timeout: timeoutInSeconds as NSNumber?)
                 promise.resolve(nil)
             } catch {
                 promise.reject(error)
             }
         }
         
-        AsyncFunction("acceptConnection") { (peerId: String, promise: Promise) -> Void in
+        AsyncFunction("acceptConnection") { (targetPeerId: String, promise: Promise) -> Void in
             do {
-                try nearbyConnection.acceptConnection(toDiscoveryPeer: peerId)
+                try nearbyConnection.acceptConnection(to: targetPeerId)
                 promise.resolve(nil)
             } catch {
                 promise.reject(error)
             }
         }
         
-        AsyncFunction("rejectConnection") { (peerId: String, promise: Promise) -> Void in
+        AsyncFunction("rejectConnection") { (targetPeerId: String, promise: Promise) -> Void in
             do {
-                try nearbyConnection.rejectConnection(toDiscoveryPeer: peerId)
+                try nearbyConnection.rejectConnection(to: targetPeerId)
                 promise.resolve(nil)
             } catch {
                 promise.reject(error)
             }
         }
         
-        AsyncFunction("disconnect") { (peerId: String) -> Void in
-            return nearbyConnection.disconnect(toPeer: peerId)
+        AsyncFunction("disconnect") { () -> Void in
+            return nearbyConnection.disconnect()
         }
         
-        AsyncFunction("sendText") { (peerId: String, text: String, promise: Promise) -> Void in
+        AsyncFunction("sendText") { (targetPeerId: String, text: String, promise: Promise) -> Void in
             do {
-                try nearbyConnection.sendText(toPeer: peerId, text)
+                try nearbyConnection.sendText(to: targetPeerId, payload: text)
                 promise.resolve(nil)
             } catch {
                 promise.reject(error)

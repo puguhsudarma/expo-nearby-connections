@@ -18,7 +18,7 @@ enum EventNames: String, CaseIterable {
 
 let MODULE_NAME="ExpoNearbyConnectionsModule"
 
-protocol NearbyConnectionCallbackDelegate {
+protocol NearbyConnectionCallbackDelegate: AnyObject {
     func onPeerFound(fromPeerId peerId: String, fromPeerName name: String) -> Void
     func onPeerLost(fromPeerId peerId: String) -> Void
     func onInvitationReceived(fromPeerId peerId: String, fromPeerName name: String) -> Void
