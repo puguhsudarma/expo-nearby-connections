@@ -4,7 +4,7 @@ import { FlatList, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Header } from "../../components/header";
 import { colors } from "../../constants/color";
-import { useConfirmConnection } from "../../hooks/use-confirm-connection";
+import { useConnectionListener } from "../../hooks/use-connection-listener";
 import { useDiscoveryListener } from "../../hooks/use-discovery-listener";
 import { useNavigation } from "../../hooks/use-navigation";
 import { useParam } from "../../hooks/use-param";
@@ -19,19 +19,23 @@ export const ChannelListScreen: React.FC<Props> = () => {
   const name = param.params.name;
   const { bottom } = useSafeAreaInsets();
   const { discoveredPeers } = useDiscoveryListener();
+  const { invitedPeers } = useConnectionListener(name);
 
-  useConfirmConnection({
-    isLoading: true,
-    acceptedCallback: (targetDevice) => {
+  useEffect(() => {
+    const connectedPeers = invitedPeers.find(
+      (peer) => peer.status === "connected"
+    );
+
+    if (connectedPeers) {
       navigation.navigate("chat", {
         myDevice: {
           peerId: myPeerId,
           name,
         },
-        targetDevice,
+        targetDevice: connectedPeers,
       });
-    },
-  });
+    }
+  }, [invitedPeers, myPeerId, name, navigation]);
 
   useEffect(() => {
     startDiscovery(name).then((peerId) => {

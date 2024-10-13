@@ -8,13 +8,14 @@ import { Alert } from "react-native";
 import { useConnectionListener } from "./use-connection-listener";
 
 interface Props {
+  name: string,
   isLoading: boolean;
   acceptedCallback?: (targetDevice: BasePeer) => void;
 }
 
 export const useConfirmConnection = (props: Props) => {
   const { isLoading, acceptedCallback } = props;
-  const { invitedPeers, setInvitedPeers } = useConnectionListener();
+  const { invitedPeers, setInvitedPeers } = useConnectionListener(props.name);
 
   useEffect(() => {
     if (!isLoading) {

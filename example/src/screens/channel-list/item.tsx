@@ -3,17 +3,13 @@ import { BasePeer } from "expo-nearby-connections/types/nearby-connections.types
 import React, { useCallback } from "react";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import { colors } from "../../constants/color";
-import { useParam } from "../../hooks/use-param";
 
 interface Props extends BasePeer {}
 
 export const Item: React.FC<Props> = (props) => {
-  const param = useParam<"channelList">();
-  const name = param.params.name;
-
   const handlePress = useCallback(() => {
-    requestConnection(name, props.peerId);
-  }, [name, props.peerId]);
+    requestConnection(props.peerId);
+  }, [props.peerId]);
 
   return (
     <TouchableOpacity

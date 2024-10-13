@@ -1,20 +1,15 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Alert, StyleSheet, Text, TextInput } from "react-native";
+import { startAdvertise } from "expo-nearby-connections";
+import React, { useCallback, useState } from "react";
+import { StyleSheet, Text, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../../components/button";
 import { colors } from "../../constants/color";
+import { useConfirmConnection } from "../../hooks/use-confirm-connection";
 import { useNavigation } from "../../hooks/use-navigation";
+import { useNearbyPermission } from "../../hooks/use-permission";
 import { JoinChannelButton } from "./join-channel-button";
 import { PlayServicesButton } from "./playservices-button";
 import { Separator } from "./separator";
-import { useNearbyPermission } from "../../hooks/use-permission";
-import {
-  acceptConnection,
-  rejectConnection,
-  startAdvertise,
-} from "expo-nearby-connections";
-import { useConnectionListener } from "../../hooks/use-connection-listener";
-import { useConfirmConnection } from "../../hooks/use-confirm-connection";
 
 interface Props {}
 
@@ -26,6 +21,7 @@ export const MainScreen: React.FC<Props> = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useConfirmConnection({
+    name,
     isLoading,
     acceptedCallback: (targetDevice) => {
       navigation.navigate("chat", {
