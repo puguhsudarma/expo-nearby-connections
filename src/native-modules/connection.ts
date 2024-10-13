@@ -4,35 +4,40 @@ import { genericEventListenerBuilder } from "../utilities/generic-event-listener
 import { nearbyConnectionsModule } from "./nearby-connections-module";
 
 export const requestConnection = async (
-  name: string,
   advertisePeerId: string,
   timeoutInSeconds: number = 30
 ): Promise<void> => {
   if (Platform.OS === "ios") {
     return nearbyConnectionsModule.requestConnection(
-      name,
       advertisePeerId,
       timeoutInSeconds
     );
   }
 
-  return nearbyConnectionsModule.requestConnection(name, advertisePeerId);
+  return nearbyConnectionsModule.requestConnection(advertisePeerId);
 };
 
-export const acceptConnection = async (peerId: string): Promise<void> => {
-  return nearbyConnectionsModule.acceptConnection(peerId);
+export const acceptConnection = async (targetPeerId: string): Promise<void> => {
+  return nearbyConnectionsModule.acceptConnection(targetPeerId);
 };
 
-export const rejectConnection = async (peerId: string): Promise<void> => {
-  return nearbyConnectionsModule.rejectConnection(peerId);
+export const rejectConnection = async (targetPeerId: string): Promise<void> => {
+  return nearbyConnectionsModule.rejectConnection(targetPeerId);
 };
 
-export const disconnect = async (peerId?: string): Promise<void> => {
-  return nearbyConnectionsModule.disconnect(peerId);
+export const disconnect = async (targetPeerId?: string): Promise<void> => {
+  if (Platform.OS === "ios") {
+    return nearbyConnectionsModule.disconnect();
+  }
+
+  return nearbyConnectionsModule.disconnect(targetPeerId);
 };
 
-export const sendText = async (peerId: string, text: string): Promise<void> => {
-  return nearbyConnectionsModule.sendText(peerId, text);
+export const sendText = async (
+  targetPeerId: string,
+  text: string
+): Promise<void> => {
+  return nearbyConnectionsModule.sendText(targetPeerId, text);
 };
 
 export const onTextReceived = genericEventListenerBuilder<TextReceived>(

@@ -16,18 +16,17 @@ export interface NearbyConnectionsNativeModule {
   stopDiscovery(): Promise<void>;
 
   requestConnection(
-    name: string,
     advertisePeerId: string,
     timeoutInSeconds?: number
   ): Promise<void>;
 
-  acceptConnection(peerId: string): Promise<void>;
+  acceptConnection(targetPeerId: string): Promise<void>;
 
-  rejectConnection(peerId: string): Promise<void>;
+  rejectConnection(targetPeerId: string): Promise<void>;
 
-  disconnect(peerId?: string): Promise<void>;
+  disconnect(targetPeerId?: string): Promise<void>;
 
-  sendText(peerId: string, text: string): Promise<void>;
+  sendText(targetPeerId: string, text: string): Promise<void>;
 }
 
 export enum EventNames {
