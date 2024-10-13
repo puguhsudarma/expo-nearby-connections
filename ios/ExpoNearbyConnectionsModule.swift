@@ -4,7 +4,9 @@ import MultipeerConnectivity
 public class ExpoNearbyConnectionsModule: Module {
     private var nearbyConnection: MultipeerConnectivityModule = MultipeerConnectivityModule()
     
-    public func onCreate() {
+    public required init(appContext: AppContext) {
+        super.init(appContext: appContext)
+        self.nearbyConnection = MultipeerConnectivityModule()
         self.nearbyConnection.delegate = self
     }
     

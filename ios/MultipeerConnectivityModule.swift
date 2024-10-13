@@ -10,6 +10,7 @@ public class MultipeerConnectivityModule: NSObject {
         peerId: MCPeerID,
         invitationHandler: (Bool, MCSession?) -> Void
     )> = [:]
+    private var connectedPeers: Dictionary<String, MCPeerID> = [:]
     weak var delegate: NearbyConnectionCallbackDelegate?
     
     deinit {
@@ -113,9 +114,9 @@ public class MultipeerConnectivityModule: NSObject {
             throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "SendText: Invalid text data."])
         }
         
-        guard let targetPeerId = self.invitedPeers.first(where: {
+        guard let targetPeerId = self.connectedPeers.first(where: {
             $0.key == peerId
-        })?.value.peerId else {
+        })?.value else {
             throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "SendText: Not found target peer."])
         }
         
@@ -142,6 +143,8 @@ extension MultipeerConnectivityModule: MCNearbyServiceBrowserDelegate {
     }
     
     public func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
+        print("Browser Events: foundPeer", peerID.displayName)
+        
         let peerIdHash = String(peerID.hash)
         
         self.discoveredPeers[peerIdHash] = peerID
@@ -162,8 +165,10 @@ extension MultipeerConnectivityModule: MCSessionDelegate {
         
         switch state {
         case .connected:
+            self.connectedPeers[peerIdHash] = peerID
             self.delegate?.onConnected(fromPeerId: peerIdHash, fromPeerName: peerID.displayName)
         case .notConnected:
+            self.connectedPeers.removeValue(forKey: peerIdHash)
             self.delegate?.onDisconnected(fromPeerId: peerIdHash)
         case .connecting:
             // TODO: Implement connecting
