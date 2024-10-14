@@ -1,5 +1,5 @@
-import { sendText } from "expo-nearby-connections";
-import React, { useCallback } from "react";
+import { disconnect, sendText } from "expo-nearby-connections";
+import React, { useCallback, useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import { GiftedChat, IMessage } from "react-native-gifted-chat";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,12 +17,31 @@ export const ChatScreen: React.FC<Props> = () => {
   const insets = useSafeAreaInsets();
   const { data, setData } = usePayloadListener(targetDevice);
 
+  useEffect(() => {
+    return () => {
+      disconnect(targetDevice.peerId)
+        .then(() => {
+          console.log("Disconnected from: ", targetDevice.peerId);
+        })
+        .catch((error) => {
+          console.error("Error disconnecting: ", error);
+        });
+    };
+  }, [targetDevice.peerId]);
+
   const handleSendText = useCallback(
     (messages: IMessage[]) => {
-      sendText(targetDevice.peerId, messages[0].text);
-      setData((previousMessages) =>
-        GiftedChat.append(previousMessages, messages)
-      );
+      sendText(targetDevice.peerId, messages[0].text)
+        .then(() => {
+          setData((previousMessages) =>
+            GiftedChat.append(previousMessages, messages)
+          );
+
+          console.log("Sent: ", messages[0].text);
+        })
+        .catch((error) => {
+          console.error("Error sending: ", error);
+        });
     },
     [setData, targetDevice.peerId]
   );

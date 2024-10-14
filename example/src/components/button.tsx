@@ -24,7 +24,7 @@ export const Button: React.FC<Props> = (props) => {
       return (
         <Text
           style={{
-            color: "#fff",
+            color: colors.white,
             fontSize: 16,
             fontWeight: "bold",
           }}

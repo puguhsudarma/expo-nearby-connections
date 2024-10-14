@@ -31,6 +31,8 @@ export const MainScreen: React.FC<Props> = () => {
         },
         targetDevice,
       });
+
+      setIsLoading(false);
     },
   });
 
