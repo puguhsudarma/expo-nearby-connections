@@ -1,8 +1,6 @@
 package expo.modules.nearbyconnections
 
 import android.content.Context
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.AdvertisingOptions
 import com.google.android.gms.nearby.connection.ConnectionInfo
@@ -15,139 +13,186 @@ import com.google.android.gms.nearby.connection.EndpointDiscoveryCallback
 import com.google.android.gms.nearby.connection.Payload
 import com.google.android.gms.nearby.connection.PayloadCallback
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate
-import com.google.android.gms.nearby.connection.Strategy
 import com.google.android.gms.tasks.Task
 
 class NearbyConnectionsModule(
     private val context: Context,
-    val callbacks: NearbyConnectionCallbacks
-) {
+    private val callbacks: NearbyConnectionCallbacks
+) : NearbyConnectionModule {
     private val connectionsClient: ConnectionsClient by lazy {
         Nearby.getConnectionsClient(
             context
         )
     }
-    private val initiatedConnections = mutableMapOf<String, String>()
+    private var myPeerName: String = ""
+    private var isAdvertising = false
+    private var isDiscovering = false
+    private val initiatedPeers: MutableMap<String, String> = mutableMapOf()
 
-    fun isPlayServicesAvailable(): Boolean {
-        val isAvailable = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
-        return isAvailable == ConnectionResult.SUCCESS
-    }
-
-    fun startAdvertise(name: String, strategy: Double?): Task<Void> {
+    override fun startAdvertise(name: String, strategy: Double?): Task<String> {
+        this.myPeerName = name
         val serviceId = context.packageName.toString()
         val options = AdvertisingOptions.Builder()
             .setStrategy(getStrategy(strategy))
             .build()
 
-        return connectionsClient.startAdvertising(
+        val nearbyConnectionTask = connectionsClient.startAdvertising(
             name,
             serviceId,
-            connectionLifecycleCallback,
+            advertiseCallback,
             options
         )
+
+        return nearbyConnectionTask.continueWith { task ->
+            if (task.isSuccessful) {
+                this.isAdvertising = true
+                name
+            } else {
+                throw task.exception ?: Exception("Failed to start advertising")
+            }
+        }
     }
 
-    fun stopAdvertise() {
+    override fun stopAdvertise() {
         connectionsClient.stopAdvertising()
+        this.isAdvertising = false
     }
 
-    fun startDiscovery(strategy: Double?): Task<Void> {
+    override fun startDiscovery(name: String, strategy: Double?): Task<String> {
+        this.myPeerName = name
         val serviceId = context.packageName.toString()
-        val strategyInstance = DiscoveryOptions.Builder().setStrategy(getStrategy(strategy)).build()
+        val strategyInstance = DiscoveryOptions.Builder()
+            .setStrategy(getStrategy(strategy))
+            .build()
 
-        return connectionsClient.startDiscovery(
+        val nearbyConnectionTask = connectionsClient.startDiscovery(
             serviceId,
-            endpointDiscoveryCallback,
+            discoveryCallback,
             strategyInstance
         )
+
+        return nearbyConnectionTask.continueWith { task ->
+            if (task.isSuccessful) {
+                this.isDiscovering = true
+                name
+            } else {
+                throw task.exception ?: Exception("Failed to start discovery")
+            }
+        }
     }
 
-    fun stopDiscovery() {
+    override fun stopDiscovery() {
         connectionsClient.stopDiscovery()
+        this.isDiscovering = false
     }
 
-    fun requestConnection(name: String, advertisePeerId: String): Task<Void> {
+    override fun requestConnection(advertisePeerId: String): Task<Void> {
         return connectionsClient.requestConnection(
-            name,
+            this.myPeerName,
             advertisePeerId,
-            connectionLifecycleCallback,
+            requestConnectionCallback,
         )
     }
 
-    fun acceptConnection(peerId: String): Task<Void> {
+    override fun acceptConnection(targetPeerId: String): Task<Void> {
         return connectionsClient.acceptConnection(
-            peerId,
+            targetPeerId,
             payloadCallback,
         )
     }
 
-    fun rejectConnection(peerId: String): Task<Void> {
+    override fun rejectConnection(targetPeerId: String): Task<Void> {
         return connectionsClient.rejectConnection(
-            peerId,
+            targetPeerId,
         )
     }
 
-    fun disconnect(peerId: String) {
-        connectionsClient.disconnectFromEndpoint(peerId)
+    override fun disconnect(targetPeerId: String) {
+        connectionsClient.disconnectFromEndpoint(targetPeerId)
     }
 
-    fun sendText(peerId: String, text: String): Task<Void> {
+    override fun sendText(targetPeerId: String, text: String): Task<Void> {
         return connectionsClient.sendPayload(
-            peerId,
+            targetPeerId,
             Payload.fromBytes(text.toByteArray())
         )
     }
 
-    private fun getStrategy(strategy: Double?): Strategy {
-        if (strategy == null) {
-            return Strategy.P2P_STAR
-        }
-
-        return when (strategy.toInt()) {
-            1 -> Strategy.P2P_CLUSTER
-            2 -> Strategy.P2P_STAR
-            3 -> Strategy.P2P_POINT_TO_POINT
-            else -> throw IllegalArgumentException("Invalid strategy")
-        }
-    }
-
-    private val connectionLifecycleCallback: ConnectionLifecycleCallback =
+    private val advertiseCallback: ConnectionLifecycleCallback =
         object : ConnectionLifecycleCallback() {
-            override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
+            override fun onConnectionResult(peerId: String, result: ConnectionResolution) {
                 if (!result.status.isSuccess) {
                     // TODO: handle connection failure
+                    println("Connection failed: ${result.status}")
                     return
                 }
 
-                val name = initiatedConnections[endpointId] ?: ""
-                callbacks.onConnected(endpointId, name)
+                val targetPeerName = initiatedPeers.firstNotNullOf {
+                    if (it.key == peerId) {
+                        it.value
+                    } else {
+                        ""
+                    }
+                }
+
+                callbacks.onConnected(peerId, targetPeerName)
             }
 
-            override fun onDisconnected(endpointId: String) {
-                initiatedConnections.remove(endpointId)
-                callbacks.onDisconnected(endpointId)
+            override fun onDisconnected(peerId: String) {
+                callbacks.onDisconnected(peerId)
             }
 
-            override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
-                initiatedConnections[endpointId] = connectionInfo.endpointName
-                callbacks.onInvitationReceived(endpointId, connectionInfo.endpointName)
+            override fun onConnectionInitiated(peerId: String, connectionInfo: ConnectionInfo) {
+                val peerName = connectionInfo.endpointName
+                initiatedPeers[peerId] = peerName
+                callbacks.onInvitationReceived(peerId, peerName)
             }
         }
 
-    private val endpointDiscoveryCallback: EndpointDiscoveryCallback =
-        object : EndpointDiscoveryCallback() {
-            override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
-                callbacks.onPeerFound(endpointId, info.endpointName)
+    private val requestConnectionCallback: ConnectionLifecycleCallback =
+        object : ConnectionLifecycleCallback() {
+            override fun onConnectionResult(peerId: String, result: ConnectionResolution) {
+                if (!result.status.isSuccess) {
+                    // TODO: handle connection failure
+                    println("Connection failed: ${result.status}")
+                    return
+                }
+
+                val targetPeerName = initiatedPeers.firstNotNullOf {
+                    if (it.key == peerId) {
+                        it.value
+                    } else {
+                        ""
+                    }
+                }
+
+                callbacks.onConnected(peerId, targetPeerName)
             }
 
-            override fun onEndpointLost(endpointId: String) {
-                callbacks.onPeerLost(endpointId)
+            override fun onDisconnected(peerId: String) {
+                callbacks.onDisconnected(peerId)
+            }
+
+            override fun onConnectionInitiated(peerId: String, connectionInfo: ConnectionInfo) {
+                val peerName = connectionInfo.endpointName
+                initiatedPeers[peerId] = peerName
+                acceptConnection(peerId)
+            }
+        }
+
+    private val discoveryCallback: EndpointDiscoveryCallback =
+        object : EndpointDiscoveryCallback() {
+            override fun onEndpointFound(peerId: String, info: DiscoveredEndpointInfo) {
+                callbacks.onPeerFound(peerId, info.endpointName)
+            }
+
+            override fun onEndpointLost(peerId: String) {
+                callbacks.onPeerLost(peerId)
             }
         }
 
     private val payloadCallback: PayloadCallback = object : PayloadCallback() {
-        override fun onPayloadReceived(endpointId: String, payload: Payload) {
+        override fun onPayloadReceived(peerId: String, payload: Payload) {
             if (payload.type != Payload.Type.BYTES) {
                 // TODO: handle other payload types
                 return
@@ -158,11 +203,11 @@ class NearbyConnectionsModule(
                 return
             }
 
-            callbacks.onTextReceived(endpointId, String(bytes))
+            callbacks.onTextReceived(peerId, String(bytes))
         }
 
         override fun onPayloadTransferUpdate(
-            endpointId: String, update: PayloadTransferUpdate
+            peerId: String, update: PayloadTransferUpdate
         ) {
             // TODO: handle payload transfer update
         }

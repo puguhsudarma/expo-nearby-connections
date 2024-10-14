@@ -2,10 +2,12 @@ package expo.modules.nearbyconnections
 
 import android.content.Context
 import androidx.core.os.bundleOf
-import expo.modules.kotlin.modules.Module
-import expo.modules.kotlin.modules.ModuleDefinition
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.exception.CodedException
+import expo.modules.kotlin.modules.Module
+import expo.modules.kotlin.modules.ModuleDefinition
 
 class ExpoNearbyConnectionsModule : Module() {
     override fun definition() = ModuleDefinition {
@@ -14,82 +16,105 @@ class ExpoNearbyConnectionsModule : Module() {
         Name(MODULE_NAME)
 
         AsyncFunction("isPlayServicesAvailable") {
-            return@AsyncFunction nearbyConnectionsModule.isPlayServicesAvailable()
+            val result = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
+            val isAvailable = result == ConnectionResult.SUCCESS
+
+            return@AsyncFunction isAvailable
         }
 
         AsyncFunction("startAdvertise") { name: String, strategy: Double?, promise: Promise ->
-            nearbyConnectionsModule.startAdvertise(name, strategy)
-                .addOnSuccessListener {
-                    promise.resolve(name)
-                }
-                .addOnFailureListener {
-                    promise.reject(CodedException("", it.message, it.cause))
-                }
+            nearbyConnectionsModule.startAdvertise(name, strategy).addOnSuccessListener { result ->
+                promise.resolve(result)
+            }.addOnFailureListener {
+                promise.reject(
+                    CodedException(
+                        "E_NEARBY_CONNECTIONS_START_ADVERTISE_FAILED",
+                        "Failed to start advertising",
+                        it
+                    )
+                )
+            }
         }
 
         AsyncFunction("stopAdvertise") {
-            nearbyConnectionsModule.stopAdvertise()
-            return@AsyncFunction null
+            return@AsyncFunction nearbyConnectionsModule.stopAdvertise()
         }
 
         AsyncFunction("startDiscovery") { name: String, strategy: Double?, promise: Promise ->
-            nearbyConnectionsModule.startDiscovery(strategy)
-                .addOnSuccessListener {
-                    promise.resolve(name)
-                }
-                .addOnFailureListener {
-                    promise.reject(CodedException("", it.message, it.cause))
-                }
+            nearbyConnectionsModule.startDiscovery(name, strategy).addOnSuccessListener { result ->
+                promise.resolve(result)
+            }.addOnFailureListener {
+                promise.reject(
+                    CodedException(
+                        "E_NEARBY_CONNECTIONS_START_DISCOVERY_FAILED",
+                        "Failed to start discovery",
+                        it
+                    )
+                )
+            }
         }
 
         AsyncFunction("stopDiscovery") {
-            nearbyConnectionsModule.stopDiscovery()
-            return@AsyncFunction null
+            return@AsyncFunction nearbyConnectionsModule.stopDiscovery()
         }
 
-        AsyncFunction("requestConnection") { name: String, advertisePeerId: String, promise: Promise ->
-            nearbyConnectionsModule.requestConnection(name, advertisePeerId)
-                .addOnSuccessListener {
-                    promise.resolve(null)
-                }
-                .addOnFailureListener {
-                    promise.reject(CodedException("", it.message, it.cause))
-                }
+        AsyncFunction("requestConnection") { advertisePeerId: String, promise: Promise ->
+            nearbyConnectionsModule.requestConnection(advertisePeerId).addOnSuccessListener {
+                promise.resolve(null)
+            }.addOnFailureListener {
+                promise.reject(
+                    CodedException(
+                        "E_NEARBY_CONNECTIONS_REQUEST_CONNECTION_FAILED",
+                        "Failed to request connection",
+                        it
+                    )
+                )
+
+            }
         }
 
-        AsyncFunction("acceptConnection") { peerId: String, promise: Promise ->
-            nearbyConnectionsModule.acceptConnection(peerId)
-                .addOnSuccessListener {
-                    promise.resolve(null)
-                }
-                .addOnFailureListener {
-                    promise.reject(CodedException("", it.message, it.cause))
-                }
+        AsyncFunction("acceptConnection") { targetPeerId: String, promise: Promise ->
+            nearbyConnectionsModule.acceptConnection(targetPeerId).addOnSuccessListener {
+                promise.resolve(null)
+            }.addOnFailureListener {
+                promise.reject(
+                    CodedException(
+                        "E_NEARBY_CONNECTIONS_ACCEPT_CONNECTION_FAILED",
+                        "Failed to accept connection",
+                        it
+                    )
+                )
+            }
         }
 
-        AsyncFunction("rejectConnection") { peerId: String, promise: Promise ->
-            nearbyConnectionsModule.rejectConnection(peerId)
-                .addOnSuccessListener {
-                    promise.resolve(null)
-                }
-                .addOnFailureListener {
-                    promise.reject(CodedException("", it.message, it.cause))
-                }
+        AsyncFunction("rejectConnection") { targetPeerId: String, promise: Promise ->
+            nearbyConnectionsModule.rejectConnection(targetPeerId).addOnSuccessListener {
+                promise.resolve(null)
+            }.addOnFailureListener {
+                promise.reject(
+                    CodedException(
+                        "E_NEARBY_CONNECTIONS_REJECT_CONNECTION_FAILED",
+                        "Failed to reject connection",
+                        it
+                    )
+                )
+            }
         }
 
-        AsyncFunction("disconnect") { peerId: String ->
-            nearbyConnectionsModule.disconnect(peerId)
-            return@AsyncFunction true
+        AsyncFunction("disconnect") { targetPeerId: String ->
+            return@AsyncFunction nearbyConnectionsModule.disconnect(targetPeerId)
         }
 
-        AsyncFunction("sendText") { peerId: String, text: String, promise: Promise ->
-            nearbyConnectionsModule.sendText(peerId, text)
-                .addOnSuccessListener {
-                    promise.resolve(null)
-                }
-                .addOnFailureListener {
-                    promise.reject(CodedException("", it.message, it.cause))
-                }
+        AsyncFunction("sendText") { targetPeerId: String, text: String, promise: Promise ->
+            nearbyConnectionsModule.sendText(targetPeerId, text).addOnSuccessListener {
+                promise.resolve(null)
+            }.addOnFailureListener {
+                promise.reject(
+                    CodedException(
+                        "E_NEARBY_CONNECTIONS_SEND_TEXT_FAILED", "Failed to send text", it
+                    )
+                )
+            }
         }
     }
 
@@ -130,7 +155,8 @@ class ExpoNearbyConnectionsModule : Module() {
     private fun onInvitationReceived(peerId: String, name: String) {
         this@ExpoNearbyConnectionsModule.sendEvent(
             EventName.ON_INVITATION_RECEIVED.toString(), bundleOf(
-                "peerId" to peerId, "name" to name
+                "peerId" to peerId,
+                "name" to name
             )
         )
     }
@@ -138,7 +164,8 @@ class ExpoNearbyConnectionsModule : Module() {
     private fun onConnected(peerId: String, name: String) {
         this@ExpoNearbyConnectionsModule.sendEvent(
             EventName.ON_CONNECTED.toString(), bundleOf(
-                "peerId" to peerId, "name" to name
+                "peerId" to peerId,
+                "name" to name
             )
         )
     }
@@ -154,7 +181,8 @@ class ExpoNearbyConnectionsModule : Module() {
     private fun onTextReceived(peerId: String, text: String) {
         this@ExpoNearbyConnectionsModule.sendEvent(
             EventName.ON_TEXT_RECEIVED.toString(), bundleOf(
-                "peerId" to peerId, "text" to text
+                "peerId" to peerId,
+                "text" to text
             )
         )
     }

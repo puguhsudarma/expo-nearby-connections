@@ -1,5 +1,7 @@
 package expo.modules.nearbyconnections
 
+import com.google.android.gms.tasks.Task
+
 enum class EventName {
     ON_PEER_FOUND {
         override fun toString() = "onPeerFound"
@@ -22,6 +24,18 @@ enum class EventName {
 }
 
 const val MODULE_NAME = "ExpoNearbyConnectionsModule"
+
+interface NearbyConnectionModule {
+    fun startAdvertise(name: String, strategy: Double?): Task<String>
+    fun stopAdvertise()
+    fun startDiscovery(name: String, strategy: Double?): Task<String>
+    fun stopDiscovery()
+    fun requestConnection(advertisePeerId: String): Task<Void>
+    fun acceptConnection(targetPeerId: String): Task<Void>
+    fun rejectConnection(targetPeerId: String): Task<Void>
+    fun disconnect(targetPeerId: String)
+    fun sendText(targetPeerId: String, text: String): Task<Void>
+}
 
 data class NearbyConnectionCallbacks(
     val onPeerFound: (peerId: String, name: String) -> Unit,
