@@ -33,11 +33,11 @@ const withNSBonjourServicesInfoPlist: ConfigPlugin<Props> = (
 
 const withNSLocalNetworkUsageInfoPlist: ConfigPlugin<Props> = (
   config,
-  { localNetworkUsagePermissionText: networkUsagePermissionText }
+  { localNetworkUsagePermissionText }
 ) => {
   return withInfoPlist(config, (plistConfig) => {
     const permissionText =
-      networkUsagePermissionText ||
+      localNetworkUsagePermissionText ||
       "$(PRODUCT_NAME) need access to your local network to discover nearby devices";
 
     plistConfig.modResults.NSLocalNetworkUsageDescription = permissionText;
@@ -65,14 +65,11 @@ const withAndroidPermissions: ConfigPlugin = (config) => {
 
 const withExpoNearbyConnectionPlugin: ConfigPlugin<Props> = (
   config,
-  {
-    bonjourServicesName,
-    localNetworkUsagePermissionText: networkUsagePermissionText,
-  }
+  { bonjourServicesName, localNetworkUsagePermissionText }
 ) => {
   return withPlugins(config, [
     [withNSBonjourServicesInfoPlist, { bonjourServicesName }],
-    [withNSLocalNetworkUsageInfoPlist, { networkUsagePermissionText }],
+    [withNSLocalNetworkUsageInfoPlist, { localNetworkUsagePermissionText }],
     withAndroidPermissions,
   ]);
 };

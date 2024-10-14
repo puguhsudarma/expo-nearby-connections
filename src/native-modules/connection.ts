@@ -4,16 +4,8 @@ import { genericEventListenerBuilder } from "../utilities/generic-event-listener
 import { nearbyConnectionsModule } from "./nearby-connections-module";
 
 export const requestConnection = async (
-  advertisePeerId: string,
-  timeoutInSeconds: number = 30
+  advertisePeerId: string
 ): Promise<void> => {
-  if (Platform.OS === "ios") {
-    return nearbyConnectionsModule.requestConnection(
-      advertisePeerId,
-      timeoutInSeconds
-    );
-  }
-
   return nearbyConnectionsModule.requestConnection(advertisePeerId);
 };
 

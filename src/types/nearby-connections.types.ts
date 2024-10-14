@@ -15,10 +15,7 @@ export interface NearbyConnectionsNativeModule {
 
   stopDiscovery(): Promise<void>;
 
-  requestConnection(
-    advertisePeerId: string,
-    timeoutInSeconds?: number
-  ): Promise<void>;
+  requestConnection(advertisePeerId: string): Promise<void>;
 
   acceptConnection(targetPeerId: string): Promise<void>;
 
