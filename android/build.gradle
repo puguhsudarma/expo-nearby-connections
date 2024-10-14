@@ -90,5 +90,5 @@ dependencies {
   implementation project(':expo-modules-core')
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${getKotlinVersion()}"
 
-  implementation "com.google.android.gms:play-services-nearby:19.2.0"
+  implementation "com.google.android.gms:play-services-nearby:19.3.0"
 }
