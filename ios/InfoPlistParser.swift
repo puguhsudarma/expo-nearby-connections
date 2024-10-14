@@ -57,7 +57,7 @@ struct InfoPlistParser {
                 }
             }
         } catch {
-            print("Invalid regex pattern")
+            print("InfoPlistParser.extractServiceName Error: \(error)")
         }
         
         return nil

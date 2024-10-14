@@ -6,7 +6,6 @@ public class ExpoNearbyConnectionsModule: Module {
     
     public required init(appContext: AppContext) {
         super.init(appContext: appContext)
-        self.nearbyConnection = MultipeerConnectivityModule()
         self.nearbyConnection.delegate = self
     }
     
@@ -22,7 +21,7 @@ public class ExpoNearbyConnectionsModule: Module {
         AsyncFunction("startAdvertise") { (name: String) -> String in
             let myPeerId = self.nearbyConnection.startAdvertise(name)
             
-            return String(myPeerId.hash)
+            return myPeerId
         }
         
         AsyncFunction("stopAdvertise") { () -> Void in
@@ -32,16 +31,16 @@ public class ExpoNearbyConnectionsModule: Module {
         AsyncFunction("startDiscovery") { (name: String) -> String in
             let myPeerId = nearbyConnection.startDiscovery(name)
             
-            return String(myPeerId.hash)
+            return myPeerId
         }
         
         AsyncFunction("stopDiscovery") { () -> Void in
             return nearbyConnection.stopDiscovery()
         }
         
-        AsyncFunction("requestConnection") { (advertisePeerId: String, timeoutInSeconds: Int?, promise: Promise) -> Void in
+        AsyncFunction("requestConnection") { (advertisePeerId: String, promise: Promise) -> Void in
             do {
-                try nearbyConnection.requestConnection(to: advertisePeerId, timeout: timeoutInSeconds as NSNumber?)
+                try nearbyConnection.requestConnection(to: advertisePeerId)
                 promise.resolve(nil)
             } catch {
                 promise.reject(error)

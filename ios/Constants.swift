@@ -18,6 +18,20 @@ enum EventNames: String, CaseIterable {
 
 let MODULE_NAME="ExpoNearbyConnectionsModule"
 
+let REQUEST_CONNECTION_TIMEOUT: NSNumber = 30 // in seconds
+
+protocol NearbyConnectionModule {
+    func startAdvertise(_ name: String) -> String
+    func stopAdvertise() -> Void
+    func startDiscovery(_ name: String) -> String
+    func stopDiscovery() -> Void
+    func requestConnection(to advertisePeerId: String) throws -> Void
+    func acceptConnection(to peerId: String) throws -> Void
+    func rejectConnection(to peerId: String) throws -> Void
+    func disconnect() -> Void
+    func sendText(to peerId: String, payload text: String) throws -> Void
+}
+
 protocol NearbyConnectionCallbackDelegate: AnyObject {
     func onPeerFound(fromPeerId peerId: String, fromPeerName name: String) -> Void
     func onPeerLost(fromPeerId peerId: String) -> Void

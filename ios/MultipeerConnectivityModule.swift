@@ -1,6 +1,6 @@
 import MultipeerConnectivity
 
-public class MultipeerConnectivityModule: NSObject {
+public class MultipeerConnectivityModule: NSObject, NearbyConnectionModule {
     private var myPeerId: MCPeerID?
     private var advertiser: MCNearbyServiceAdvertiser?
     private var discovery: MCNearbyServiceBrowser?
@@ -19,7 +19,7 @@ public class MultipeerConnectivityModule: NSObject {
         self.session?.disconnect()
     }
     
-    public func startAdvertise(_ name: String) -> MCPeerID {
+    public func startAdvertise(_ name: String) -> String {
         let peerId = MCPeerID(displayName: name)
         self.myPeerId = peerId
         let discoveryInfo: Dictionary<String, String> = [
@@ -36,14 +36,14 @@ public class MultipeerConnectivityModule: NSObject {
         
         self.advertiser?.startAdvertisingPeer()
         
-        return peerId
+        return String(peerId.hash)
     }
     
-    public func stopAdvertise() {
+    public func stopAdvertise() -> Void {
         self.advertiser?.stopAdvertisingPeer()
     }
     
-    public func startDiscovery(_ name: String) -> MCPeerID {
+    public func startDiscovery(_ name: String) -> String {
         let peerId = MCPeerID(displayName: name)
         self.myPeerId = peerId
         let serviceType = InfoPlistParser.getServiceType()
@@ -56,14 +56,14 @@ public class MultipeerConnectivityModule: NSObject {
         
         self.discovery?.startBrowsingForPeers()
         
-        return peerId
+        return String(peerId.hash)
     }
     
-    public func stopDiscovery() {
+    public func stopDiscovery() -> Void {
         self.discovery?.stopBrowsingForPeers()
     }
     
-    public func requestConnection(to advertisePeerId: String, timeout timeoutInSeconds: NSNumber?) throws {
+    public func requestConnection(to advertisePeerId: String) throws -> Void {
         guard let myPeerId = self.myPeerId else {
             throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "RequestConnection: Not found my peer."])
         }
@@ -74,18 +74,18 @@ public class MultipeerConnectivityModule: NSObject {
         ]
         let contextData = try? JSONSerialization.data(withJSONObject: contextObj)
         
-        let timeout = TimeInterval(truncating: timeoutInSeconds ?? 30)
+        let timeout = TimeInterval(truncating: REQUEST_CONNECTION_TIMEOUT)
         
         guard let targetPeerId = self.discoveredPeers.first(where: {
             $0.key == advertisePeerId
         })?.value else {
             throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "RequestConnection: Not found target peer."])
         }
-
+        
         self.discovery?.invitePeer(targetPeerId, to: self.session!, withContext: contextData, timeout: timeout)
     }
     
-    public func acceptConnection(to peerId: String) throws {
+    public func acceptConnection(to peerId: String) throws -> Void {
         guard let invitedPeer = self.invitedPeers.first(where: {
             $0.key == peerId
         })?.value else {
@@ -95,21 +95,21 @@ public class MultipeerConnectivityModule: NSObject {
         invitedPeer.invitationHandler(true, self.session)
     }
     
-    public func rejectConnection(to peerId: String) throws {
+    public func rejectConnection(to peerId: String) throws -> Void {
         guard let invitedPeer = self.invitedPeers.first(where: {
             $0.key == peerId
         })?.value else {
             throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "RejectConnection: Not found target peer."])
         }
-
+        
         invitedPeer.invitationHandler(false, self.session)
     }
     
-    public func disconnect() {
+    public func disconnect() -> Void {
         self.session?.disconnect()
     }
     
-    public func sendText(to peerId: String, payload text: String) throws {
+    public func sendText(to peerId: String, payload text: String) throws -> Void {
         guard let data = text.data(using: .utf8) else {
             throw NSError(domain: "ExpoNearbyConnections", code: 0, userInfo: [NSLocalizedDescriptionKey: "SendText: Invalid text data."])
         }
@@ -143,8 +143,6 @@ extension MultipeerConnectivityModule: MCNearbyServiceBrowserDelegate {
     }
     
     public func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
-        print("Browser Events: foundPeer", peerID.displayName)
-        
         let peerIdHash = String(peerID.hash)
         
         self.discoveredPeers[peerIdHash] = peerID
