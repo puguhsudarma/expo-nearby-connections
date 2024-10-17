@@ -17,19 +17,19 @@ export const rejectConnection = async (targetPeerId: string): Promise<void> => {
   return nearbyConnectionsModule.rejectConnection(targetPeerId);
 };
 
-export const disconnect = async (targetPeerId?: string): Promise<void> => {
+export const disconnect = async (connectedPeerId?: string): Promise<void> => {
   if (Platform.OS === "ios") {
     return nearbyConnectionsModule.disconnect();
   }
 
-  return nearbyConnectionsModule.disconnect(targetPeerId);
+  return nearbyConnectionsModule.disconnect(connectedPeerId);
 };
 
 export const sendText = async (
-  targetPeerId: string,
+  connectedPeerId: string,
   text: string
 ): Promise<void> => {
-  return nearbyConnectionsModule.sendText(targetPeerId, text);
+  return nearbyConnectionsModule.sendText(connectedPeerId, text);
 };
 
 export const onTextReceived = genericEventListenerBuilder<TextReceived>(
