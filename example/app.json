@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Nearby Connections Example",
-    "slug": "expo-nearby-connections-example",
+    "name": "Awezome Chat",
+    "slug": "awezome-chat",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -40,7 +40,7 @@
       [
         "../app.plugin.js",
         {
-          "bonjourServicesName": "nearby-example",
+          "bonjourServicesName": "awezome-chat",
           "localNetworkUsagePermissionText": "$(PRODUCT_NAME) need access to your local network to discover nearby devices"
         }
       ]
