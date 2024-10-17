@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "expo-nearby-connections-example",
-    "slug": "expo-nearby-connections-example",
+    "name": "Awezome Chat",
+    "slug": "awezome-chat",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -11,12 +11,14 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "expo.modules.nearbyconnections.example"
+      "bundleIdentifier": "expo.modules.nearbyconnections.example",
+      "infoPlist": {
+        "NSBluetoothAlwaysUsageDescription": "$(PRODUCT_NAME) need access to your local network to discover nearby devices",
+        "NSBluetoothPeripheralUsageDescription": "$(PRODUCT_NAME) need access to your local network to discover nearby devices"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -27,6 +29,21 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "react-native-permissions",
+        {
+          "iosPermissions": ["Bluetooth"]
+        }
+      ],
+      [
+        "../app.plugin.js",
+        {
+          "bonjourServicesName": "awezome-chat",
+          "localNetworkUsagePermissionText": "$(PRODUCT_NAME) need access to your local network to discover nearby devices"
+        }
+      ]
+    ]
   }
 }
