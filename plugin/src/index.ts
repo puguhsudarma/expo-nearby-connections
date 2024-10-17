@@ -6,7 +6,7 @@ import { withNSLocalNetworkUsageInfoPlist } from "./with-nslocal-network-usage-i
 
 const withExpoNearbyConnectionPlugin: ConfigPlugin<PluginProps> = (
   config,
-  { bonjourServicesName, localNetworkUsagePermissionText }
+  { bonjourServicesName, localNetworkUsagePermissionText } = {}
 ) => {
   return withPlugins(config, [
     [withNSBonjourServicesInfoPlist, { bonjourServicesName }],
