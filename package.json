@@ -1,7 +1,7 @@
 {
   "name": "expo-nearby-connections",
-  "version": "0.1.0",
-  "description": "My new module",
+  "version": "1.0.0",
+  "description": "P2P connections library for Expo. Supports Android and iOS.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
@@ -18,8 +18,8 @@
   "keywords": [
     "react-native",
     "expo",
-    "expo-nearby-connections",
-    "ExpoNearbyConnections"
+    "nearby-connections",
+    "P2P-connections"
   ],
   "repository": "https://github.com/puguhsudarma/expo-nearby-connections",
   "bugs": {
