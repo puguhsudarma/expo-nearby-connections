@@ -13,7 +13,7 @@ export const genericEventListenerBuilder =
         NativeModulesProxy.ExpoNearbyConnections
     );
 
-    const eventListener = nearbyConnectionsEmitter.addListener<T>(
+    const eventListener = nearbyConnectionsEmitter.addListener(
       eventName,
       (data) => callback?.(data)
     );

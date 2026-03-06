@@ -6,6 +6,54 @@ The Expo Nearby Connection Library enables peer-to-peer (P2P) connections betwee
 
 **Note:** It does not yet support cross-platform P2P connections between Android and iOS devices.
 
+## Compatibility
+
+- **Expo SDK**: 54.x
+- **React Native**: 0.76.x
+- **iOS**: 15.1+
+- **Android**: API 23+ (Android 6.0+)
+
+## Migration Guide
+
+### Upgrading from Expo SDK 51 to 54
+
+If you're upgrading from an older version (Expo SDK 51), follow these steps:
+
+1. **Update your dependencies:**
+   ```bash
+   npm install expo@~54.0.0 react@18.3.1 react-native@0.76.6
+   # or
+   yarn add expo@~54.0.0 react@18.3.1 react-native@0.76.6
+   ```
+
+2. **Clean and reinstall:**
+   ```bash
+   # Delete node_modules and lock files
+   rm -rf node_modules package-lock.json yarn.lock
+   
+   # Reinstall dependencies
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Clean native builds:**
+   ```bash
+   # For iOS
+   cd ios && rm -rf Pods Podfile.lock && cd ..
+   npx pod-install
+   
+   # For Android
+   cd android && ./gradlew clean && cd ..
+   ```
+
+4. **Rebuild your app:**
+   ```bash
+   npx expo prebuild --clean
+   npx expo run:ios
+   npx expo run:android
+   ```
+
 ## Getting Started
 
 ### Installation
