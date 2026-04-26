@@ -1,10 +1,14 @@
-import { Platform } from "react-native";
-import { EventNames, TextReceived } from "../types/nearby-connections.types";
-import { genericEventListenerBuilder } from "../utilities/generic-event-listener-builder";
+import type { TextReceived } from "../types/nearby-connections.types";
+import { createEventHandler } from "../utilities/create-event-handler";
 import { nearbyConnectionsModule } from "./nearby-connections-module";
 
+const textReceivedHandler = createEventHandler<TextReceived>();
+
+nearbyConnectionsModule.onTextReceived = (peerId, text) =>
+  textReceivedHandler.emit({ peerId, text });
+
 export const requestConnection = async (
-  advertisePeerId: string
+  advertisePeerId: string,
 ): Promise<void> => {
   return nearbyConnectionsModule.requestConnection(advertisePeerId);
 };
@@ -18,20 +22,14 @@ export const rejectConnection = async (targetPeerId: string): Promise<void> => {
 };
 
 export const disconnect = async (connectedPeerId?: string): Promise<void> => {
-  if (Platform.OS === "ios") {
-    return nearbyConnectionsModule.disconnect();
-  }
-
   return nearbyConnectionsModule.disconnect(connectedPeerId);
 };
 
 export const sendText = async (
   connectedPeerId: string,
-  text: string
+  text: string,
 ): Promise<void> => {
   return nearbyConnectionsModule.sendText(connectedPeerId, text);
 };
 
-export const onTextReceived = genericEventListenerBuilder<TextReceived>(
-  EventNames.ON_TEXT_RECEIVED
-);
+export const onTextReceived = textReceivedHandler.subscribe;

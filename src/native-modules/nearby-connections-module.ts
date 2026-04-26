@@ -1,7 +1,5 @@
-import { ExpoSettingsModuleEvents } from './ExpoSettings.types';
-import { NearbyConnectionsNativeModule } from "../types/nearby-connections.types";
-import { requireNativeModule, NativeModule } from "expo-modules-core";
+import { NitroModules } from "react-native-nitro-modules";
+import type { NearbyConnections } from "../NearbyConnections.nitro";
 
-
-// This call loads the native module object from the JSI.
-export default requireNativeModule<ExpoSettingsModule>("ExpoNearbyConnectionsModule");
+export const nearbyConnectionsModule =
+  NitroModules.createHybridObject<NearbyConnections>("NearbyConnections");
