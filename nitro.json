@@ -1,0 +1,23 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "cxxNamespace": ["nearbyconnections"],
+  "ios": {
+    "iosModuleName": "ExpoNearbyConnections"
+  },
+  "android": {
+    "androidNamespace": ["expo", "modules", "nearbyconnections"],
+    "androidCxxLibName": "NearbyConnections"
+  },
+  "autolinking": {
+    "NearbyConnections": {
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "HybridNearbyConnections"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "HybridNearbyConnections"
+      }
+    }
+  }
+}

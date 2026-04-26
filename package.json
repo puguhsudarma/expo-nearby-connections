@@ -32,14 +32,18 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@types/react": "~18.3.12",
-    "expo-module-scripts": "^3.6.0",
+    "expo-module-scripts": "^4.0.0",
     "expo-modules-core": "^2.3.3",
+    "nitrogen": "^0.35.5",
     "react": "18.3.1",
-    "react-native": "0.76.6"
+    "react-native": "0.76.6",
+    "react-native-nitro-modules": "^0.35.5"
   },
   "peerDependencies": {
     "expo": "*",
     "react": "*",
-    "react-native": "*"
-  }
+    "react-native": "*",
+    "react-native-nitro-modules": "*"
+  },
+  "packageManager": "pnpm@10.33.0"
 }
