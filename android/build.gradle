@@ -2,22 +2,17 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'maven-publish'
 
+apply from: '../nitrogen/generated/android/NearbyConnections+autolinking.gradle'
+apply from: './fix-prefab.gradle'
+
 group = 'expo.modules.nearbyconnections'
-version = '0.1.0'
+version = '1.1.0'
 
 buildscript {
-  def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
-  if (expoModulesCorePlugin.exists()) {
-    apply from: expoModulesCorePlugin
-    applyKotlinExpoModulesCorePlugin()
-  }
-
-  // Simple helper that allows the root project to override versions declared by this library.
   ext.safeExtGet = { prop, fallback ->
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
   }
 
-  // Ensures backward compatibility
   ext.getKotlinVersion = {
     if (ext.has("kotlinVersion")) {
       ext.kotlinVersion()
@@ -50,8 +45,14 @@ afterEvaluate {
   }
 }
 
+def reactNativeArchitectures() {
+  def value = rootProject.getProperties().get("reactNativeArchitectures")
+  return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+}
+
 android {
   compileSdkVersion safeExtGet("compileSdkVersion", 35)
+  ndkVersion safeExtGet("ndkVersion", "27.1.12297006")
 
   def agpVersion = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
   if (agpVersion.tokenize('.')[0].toInteger() < 8) {
@@ -70,11 +71,48 @@ android {
     minSdkVersion safeExtGet("minSdkVersion", 23)
     targetSdkVersion safeExtGet("targetSdkVersion", 35)
     versionCode 1
-    versionName "0.1.0"
+    versionName "1.1.0"
+
+    externalNativeBuild {
+      cmake {
+        cppFlags "-frtti -fexceptions -Wall -fstack-protector-all"
+        arguments "-DANDROID_STL=c++_shared", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+        abiFilters(*reactNativeArchitectures())
+      }
+    }
   }
+
+  externalNativeBuild {
+    cmake {
+      path "CMakeLists.txt"
+    }
+  }
+
+  buildFeatures {
+    prefab true
+  }
+
+  packagingOptions {
+    excludes = [
+      "META-INF",
+      "META-INF/**",
+      "**/libc++_shared.so",
+      "**/libNitroModules.so",
+      "**/libfbjni.so",
+      "**/libjsi.so",
+      "**/libfolly_json.so",
+      "**/libfolly_runtime.so",
+      "**/libglog.so",
+      "**/libhermes.so",
+      "**/libreactnative.so",
+      "**/libreactnativejni.so",
+    ]
+  }
+
   lintOptions {
     abortOnError false
   }
+
   publishing {
     singleVariant("release") {
       withSourcesJar()
@@ -87,8 +125,7 @@ repositories {
 }
 
 dependencies {
-  implementation project(':expo-modules-core')
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${getKotlinVersion()}"
-
   implementation "com.google.android.gms:play-services-nearby:19.3.0"
+  implementation project(":react-native-nitro-modules")
 }
