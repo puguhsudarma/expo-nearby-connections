@@ -1,11 +1,7 @@
-import type { TextReceived } from "../types/nearby-connections.types";
-import { createEventHandler } from "../utilities/create-event-handler";
-import { nearbyConnectionsModule } from "./nearby-connections-module";
-
-const textReceivedHandler = createEventHandler<TextReceived>();
-
-nearbyConnectionsModule.onTextReceived = (peerId, text) =>
-  textReceivedHandler.emit({ peerId, text });
+import {
+  nearbyConnectionsModule,
+  textReceivedHandler,
+} from "./nearby-connections-module";
 
 export const requestConnection = async (
   advertisePeerId: string,
@@ -21,15 +17,15 @@ export const rejectConnection = async (targetPeerId: string): Promise<void> => {
   return nearbyConnectionsModule.rejectConnection(targetPeerId);
 };
 
-export const disconnect = async (connectedPeerId?: string): Promise<void> => {
-  return nearbyConnectionsModule.disconnect(connectedPeerId);
+export const disconnect = async (targetPeerId?: string): Promise<void> => {
+  return nearbyConnectionsModule.disconnect(targetPeerId);
 };
 
 export const sendText = async (
-  connectedPeerId: string,
+  targetPeerId: string,
   text: string,
 ): Promise<void> => {
-  return nearbyConnectionsModule.sendText(connectedPeerId, text);
+  return nearbyConnectionsModule.sendText(targetPeerId, text);
 };
 
 export const onTextReceived = textReceivedHandler.subscribe;

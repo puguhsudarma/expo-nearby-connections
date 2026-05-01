@@ -1,4 +1,4 @@
-type Unsubscribe = () => void;
+export type Unsubscribe = () => void;
 
 export function createEventHandler<T>() {
   const listeners = new Set<(data: T) => void>();

@@ -1,22 +1,10 @@
-import type {
-  Connected,
-  Disconnected,
-  InvitationReceived,
-} from "../types/nearby-connections.types";
 import { Strategy } from "../NearbyConnections.nitro";
-import { createEventHandler } from "../utilities/create-event-handler";
-import { nearbyConnectionsModule } from "./nearby-connections-module";
-
-const invitationReceivedHandler = createEventHandler<InvitationReceived>();
-const connectedHandler = createEventHandler<Connected>();
-const disconnectedHandler = createEventHandler<Disconnected>();
-
-nearbyConnectionsModule.onInvitationReceived = (peerId, name) =>
-  invitationReceivedHandler.emit({ peerId, name });
-nearbyConnectionsModule.onConnected = (peerId, name) =>
-  connectedHandler.emit({ peerId, name });
-nearbyConnectionsModule.onDisconnected = (peerId) =>
-  disconnectedHandler.emit({ peerId });
+import {
+  connectedHandler,
+  disconnectedHandler,
+  invitationReceivedHandler,
+  nearbyConnectionsModule,
+} from "./nearby-connections-module";
 
 export const startAdvertise = async (
   name: string,

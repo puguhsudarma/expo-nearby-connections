@@ -1,15 +1,9 @@
-import type { PeerFound, PeerLost } from "../types/nearby-connections.types";
 import { Strategy } from "../NearbyConnections.nitro";
-import { createEventHandler } from "../utilities/create-event-handler";
-import { nearbyConnectionsModule } from "./nearby-connections-module";
-
-const peerFoundHandler = createEventHandler<PeerFound>();
-const peerLostHandler = createEventHandler<PeerLost>();
-
-nearbyConnectionsModule.onPeerFound = (peerId, name) =>
-  peerFoundHandler.emit({ peerId, name });
-nearbyConnectionsModule.onPeerLost = (peerId) =>
-  peerLostHandler.emit({ peerId });
+import {
+  nearbyConnectionsModule,
+  peerFoundHandler,
+  peerLostHandler,
+} from "./nearby-connections-module";
 
 export const startDiscovery = async (
   name: string,
