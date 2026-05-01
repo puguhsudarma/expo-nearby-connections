@@ -1,9 +1,3 @@
 {
-  "platforms": ["ios", "android"],
-  "ios": {
-    "modules": ["ExpoNearbyConnectionsModule"]
-  },
-  "android": {
-    "modules": ["expo.modules.nearbyconnections.ExpoNearbyConnectionsModule"]
-  }
+  "platforms": ["ios", "android"]
 }
