@@ -4,6 +4,12 @@
   "description": "P2P connections library for Expo. Supports Android and iOS.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    }
+  },
   "scripts": {
     "build": "expo-module build",
     "clean": "expo-module clean",

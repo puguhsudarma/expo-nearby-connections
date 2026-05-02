@@ -19,14 +19,10 @@ export const useConnectionListener = (name?: string) => {
 
   useEffect(() => {
     const unsubscribeInvitationListener = onInvitationReceived((data) => {
-      console.log(`onInvitationReceived ${name}: `, data);
-
       setInvitedPeers((peers) => [...peers, { ...data, status: "connecting" }]);
     });
 
     const unsubscribeConnectedListener = onConnected((data) => {
-      console.log(`onConnected ${name}: `, data);
-
       setInvitedPeers((peers) => {
         if (peers.some((peer) => peer.peerId === data.peerId)) {
           return peers.map((peer) => {
@@ -43,8 +39,6 @@ export const useConnectionListener = (name?: string) => {
     });
 
     const unsubscribeDisconnectedListener = onDisconnected((data) => {
-      console.log(`onDisconnected ${name}: `, data);
-
       setInvitedPeers((peers) =>
         peers.filter((peer) => peer.peerId !== data.peerId)
       );
