@@ -8,7 +8,7 @@ public class MultipeerConnectivityModule: NSObject {
 
     // Serial queue protecting all dictionary access — MC callbacks fire on background queues
     // while JS calls come from the JS thread, requiring explicit synchronization.
-    private let peerQueue = DispatchQueue(label: "com.exponearyconnections.peers")
+    private let peerQueue = DispatchQueue(label: "com.exponearbyconnections.peers")
     private var discoveredPeers: [String: MCPeerID] = [:]
     private var invitedPeers: [String: (peerId: MCPeerID, invitationHandler: (Bool, MCSession?) -> Void)] = [:]
     private var connectedPeers: [String: MCPeerID] = [:]
@@ -49,6 +49,7 @@ public class MultipeerConnectivityModule: NSObject {
     public func stopAdvertise() {
         self.advertiser?.stopAdvertisingPeer()
         self.advertiser = nil
+        peerQueue.sync { self.invitedPeers.removeAll() }
     }
 
     public func startDiscovery(_ name: String) -> String {
@@ -75,6 +76,7 @@ public class MultipeerConnectivityModule: NSObject {
     public func stopDiscovery() {
         self.discovery?.stopBrowsingForPeers()
         self.discovery = nil
+        peerQueue.sync { self.discoveredPeers.removeAll() }
     }
 
     public func requestConnection(to advertisePeerId: String) throws {

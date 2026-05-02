@@ -31,7 +31,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm build
+        run: pnpm prepare
 
       - name: Publish
         run: npx npm publish --provenance --access public --ignore-scripts

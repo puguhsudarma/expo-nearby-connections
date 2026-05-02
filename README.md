@@ -192,12 +192,16 @@ await rejectConnection(peerId);
 
 #### `disconnect(targetPeerId?)`
 
-Disconnects from a connected peer. On iOS, omitting `targetPeerId` disconnects all peers.
+Disconnects from a connected peer.
+
+- **Android**: if `targetPeerId` is provided, disconnects only that endpoint; omitting it calls `stopAllEndpoints()`.
+- **iOS**: `targetPeerId` is always ignored — `MCSession.disconnect()` terminates the entire session.
 
 ```ts
 import { disconnect } from "expo-nearby-connections";
 
-await disconnect(peerId);
+await disconnect(peerId); // Android: disconnect specific peer
+await disconnect();       // Android: disconnect all / iOS: disconnect session
 ```
 
 ### Messaging

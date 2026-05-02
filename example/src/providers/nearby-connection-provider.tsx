@@ -164,7 +164,7 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
 
       return result;
     },
-    [isAdvertised]
+    [isAdvertised, devicePeerId]
   );
 
   const _stopAdvertise = useCallback(async (): Promise<void> => {
@@ -199,7 +199,7 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
 
       return result;
     },
-    [isDiscovered]
+    [isDiscovered, devicePeerId]
   );
 
   const _stopDiscovery = useCallback(async (): Promise<void> => {
@@ -269,7 +269,7 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
       return;
     }
 
-    await safeAwait(disconnect(devicePeerId));
+    await safeAwait(disconnect());
 
     setConnectedPeers([]);
     setActorType(undefined);
@@ -278,7 +278,10 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
 
   const _sendText = useCallback(
     async (peerId: string, text: string): Promise<void> => {
-      sendText(peerId, text);
+      const [error] = await safeAwait(sendText(peerId, text));
+      if (error) {
+        throw error;
+      }
     },
     []
   );
