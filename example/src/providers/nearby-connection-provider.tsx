@@ -60,7 +60,7 @@ interface ConnectedPeerWithStatus extends InvitationReceived {
 }
 
 export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
-  const { isGranted, requestPermissionHandler } = useNearbyPermission(true);
+  const { isGranted, requestPermissionHandler } = useNearbyPermission();
   const [actorType, setActorType] = useState<ActorType>();
   const isAdvertised = actorType === "advertised";
   const isDiscovered = actorType === "discovered";
