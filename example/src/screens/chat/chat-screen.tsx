@@ -19,13 +19,7 @@ export const ChatScreen: React.FC<Props> = () => {
 
   useEffect(() => {
     return () => {
-      disconnect(targetDevice.peerId)
-        .then(() => {
-          console.log("Disconnected from: ", targetDevice.peerId);
-        })
-        .catch((error) => {
-          console.error("Error disconnecting: ", error);
-        });
+      disconnect(targetDevice.peerId).catch(() => {});
     };
   }, [targetDevice.peerId]);
 
@@ -36,12 +30,8 @@ export const ChatScreen: React.FC<Props> = () => {
           setData((previousMessages) =>
             GiftedChat.append(previousMessages, messages)
           );
-
-          console.log("Sent: ", messages[0].text);
         })
-        .catch((error) => {
-          console.error("Error sending: ", error);
-        });
+        .catch(() => {});
     },
     [setData, targetDevice.peerId]
   );

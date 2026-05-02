@@ -9,14 +9,10 @@ export const useDiscoveryListener = () => {
 
   useEffect(() => {
     const unsubscribePeerFoundListener = onPeerFound((data) => {
-      console.log(`channel ${name} onPeerFound:`, data);
-
       setDiscoveredPeers((peers) => [...peers, data]);
     });
 
     const unsubscribePeerLostListener = onPeerLost((data) => {
-      console.log(`channel ${name} onPeerLost:`, data);
-
       setDiscoveredPeers((peers) =>
         peers.filter((peer) => peer.peerId !== data.peerId)
       );

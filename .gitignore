@@ -55,3 +55,33 @@ yarn-error.log
 
 # Expo
 .expo/*
+.pnp
+.pnp.js
+dist/
+out/
+.next/
+.nuxt/
+.expo/
+.expo-shared/
+web-build/
+ios/Pods/
+ios/build/
+*.xcworkspace/xcuserdata
+android/.gradle/
+android/build/
+android/local.properties
+android/app/release/
+bin/
+obj/
+packages/
+*.user
+*.suo
+.vs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.env.local
+.env*.local
+Thumbs.db

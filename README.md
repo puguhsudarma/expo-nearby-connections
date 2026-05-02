@@ -1,571 +1,387 @@
-# Expo Nearby Connection Library
+# expo-nearby-connections
 
-## Introduction
+[![npm version](https://img.shields.io/npm/v/expo-nearby-connections.svg)](https://www.npmjs.com/package/expo-nearby-connections)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Platform: Android](https://img.shields.io/badge/Platform-Android-green.svg)](https://developer.android.com)
+[![Platform: iOS](https://img.shields.io/badge/Platform-iOS-lightgrey.svg)](https://developer.apple.com)
 
-The Expo Nearby Connection Library enables peer-to-peer (P2P) connections between mobile devices. It is an Expo wrapper for Android and iOS, with Android using [Google's Nearby Connections](https://developers.google.com/nearby/connections/overview) API and iOS using [Apple's Multipeer Connectivity framework](https://developer.apple.com/documentation/multipeerconnectivity). This library allows users to discover nearby devices, establish connections, and exchange data seamlessly.
+An [Expo](https://expo.dev) library for peer-to-peer connections between nearby devices. Uses [Google Nearby Connections](https://developers.google.com/nearby/connections/overview) on Android and [Apple Multipeer Connectivity](https://developer.apple.com/documentation/multipeerconnectivity) on iOS.
 
-**Note:** It does not yet support cross-platform P2P connections between Android and iOS devices.
+> **Note:** Cross-platform P2P between Android and iOS is not supported.
 
-## Getting Started
+## Compatible Versions
 
-### Installation
+| expo-nearby-connections | expo  | react-native |
+| :---------------------: | :---: | :----------: |
+|          1.1.0          | 55    |    0.83.x    |
+|          1.0.0          | 51    |    0.73.x    |
 
-Run the following command to install the library:
+> **New Architecture required.** expo-nearby-connections 1.1.0 uses [Nitro Modules](https://nitro.margelo.com), which requires New Architecture (enabled by default since Expo SDK 52).
+
+## Installation
 
 ```bash
-yarn add expo-nearby-connections
+npx expo install expo-nearby-connections react-native-nitro-modules
 ```
 
-or you can use the expo cli to install the library:
+Or with npm/yarn/pnpm:
 
 ```bash
-npx expo install expo-nearby-connections
+npm install expo-nearby-connections react-native-nitro-modules
+# or
+yarn add expo-nearby-connections react-native-nitro-modules
+# or
+pnpm add expo-nearby-connections react-native-nitro-modules
 ```
 
-### Expo Plugin
+## Setup
 
-Update your `app.json` or `app.config.ts` file:
+### 1. Add the config plugin
+
+In your `app.json` or `app.config.ts`:
 
 ```json
 {
-  "name": "Awesome Chat",
   "plugins": [
     [
       "expo-nearby-connections",
       {
-        "bonjourServicesName": "awesome-chat",
-        "localNetworkUsagePermissionText": "$(PRODUCT_NAME) need access to your local network to discover nearby devices"
+        "bonjourServicesName": "my-app",
+        "localNetworkUsagePermissionText": "$(PRODUCT_NAME) needs local network access to discover nearby devices",
+        "bluetoothUsagePermissionText": "$(PRODUCT_NAME) uses Bluetooth to discover and connect to nearby devices"
       }
     ]
   ]
 }
 ```
 
-or you can just use the plugin without the props.
+All plugin options are optional. Without options, default permission strings are used.
 
-```json
-{
-  "name": "Awesome Chat",
-  "plugins": ["expo-nearby-connections"]
-}
+| Option | Platform | Description |
+| ------ | -------- | ----------- |
+| `bonjourServicesName` | iOS | Bonjour service name (defaults to app name) |
+| `localNetworkUsagePermissionText` | iOS | `NSLocalNetworkUsageDescription` |
+| `bluetoothUsagePermissionText` | iOS | `NSBluetoothAlwaysUsageDescription` |
+
+### 2. Prebuild
+
+```bash
+npx expo prebuild --clean
 ```
 
-## Setup Permissions
+Run prebuild again whenever you change the plugin config.
 
-For now this library isn't support for permission handler yet. You can use other library to handle permissions, something like [react-native-permissions](https://github.com/react-native-community/react-native-permissions). Google Nearby Connections on Android requires a few specific permissions to use the library. For more information, you can check [Android's documentation](https://developers.google.com/nearby/connections/android/get-started#request_permissions).
+## Permissions
+
+This library does not handle runtime permissions. Use [react-native-permissions](https://github.com/zoontek/react-native-permissions) or similar.
+
+### iOS
 
 ```ts
-import {
-  PERMISSIONS,
-  RESULTS,
-  checkMultiple,
-  requestMultiple,
-} from "react-native-permissions";
+import { PERMISSIONS, checkMultiple, requestMultiple } from "react-native-permissions";
 
-async function checkAndRequestPermission(): Promise<boolean> {
-  const permissions =
-    Platform.OS === "ios"
-      ? [PERMISSIONS.IOS.BLUETOOTH]
-      : [
-          PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION,
-          PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
-          PERMISSIONS.ANDROID.BLUETOOTH_ADVERTISE,
-          PERMISSIONS.ANDROID.BLUETOOTH_CONNECT,
-          PERMISSIONS.ANDROID.BLUETOOTH_SCAN,
-          PERMISSIONS.ANDROID.NEARBY_WIFI_DEVICES,
-        ];
-
-  const checkPermissionStatus = await checkMultiple(permissions);
-
-  const isAllGranted = Object.values(checkPermissionStatus).every((value) => {
-    return (
-      value === RESULTS.GRANTED ||
-      value === RESULTS.UNAVAILABLE ||
-      value === RESULTS.LIMITED
-    );
-  });
-
-  if (isAllGranted) {
-    return true;
-  }
-
-  // Request permission
-  const result = await requestMultiple(permissions);
-
-  const requestIsGranted = Object.values(result).every((value) => {
-    return (
-      value === RESULTS.GRANTED ||
-      value === RESULTS.UNAVAILABLE ||
-      value === RESULTS.LIMITED
-    );
-  });
-
-  return requestIsGranted;
-}
+const permissions = [
+  PERMISSIONS.IOS.BLUETOOTH,
+  PERMISSIONS.IOS.LOCAL_NETWORK,
+];
 ```
 
-## Detailed API Usage
+### Android
 
-### Constants
+```ts
+import { PERMISSIONS, checkMultiple, requestMultiple } from "react-native-permissions";
 
-#### `Strategy`
+const permissions = [
+  PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION,
+  PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
+  PERMISSIONS.ANDROID.BLUETOOTH_ADVERTISE,
+  PERMISSIONS.ANDROID.BLUETOOTH_CONNECT,
+  PERMISSIONS.ANDROID.BLUETOOTH_SCAN,
+  PERMISSIONS.ANDROID.NEARBY_WIFI_DEVICES,
+];
+```
 
-Overview of connection strategies in Nearby Connections for Android.
+## API
+
+### Types
 
 ```ts
 enum Strategy {
-  P2P_CLUSTER = 1,
-  P2P_STAR = 2,
-  P2P_POINT_TO_POINT = 3,
+  P2P_CLUSTER = 1,        // many-to-many mesh
+  P2P_STAR = 2,           // one hub, multiple spokes (default)
+  P2P_POINT_TO_POINT = 3, // 1-to-1
+}
+
+interface BasePeer {
+  peerId: string;
+  name: string;
 }
 ```
 
-### Function Handlers
+### Advertise
 
-#### `startAdvertise()`
+#### `startAdvertise(name, strategy?)`
 
-Initiate devices to broadcast a connection to other devices.
-
-```ts
-function startAdvertise(
-  name: string,
-  strategy?: Strategy = Strategy.P2P_STAR // only for android
-): Promise<string>;
-```
+Starts broadcasting so nearby discoverers can find this device.
 
 ```ts
-import { startAdvertise } from "expo-nearby-connections";
+import { startAdvertise, Strategy } from "expo-nearby-connections";
 
-startAdvertise("My Device Name Or ID", Strategy.P2P_STAR)
-  .then((peerId) => {
-    setMyPeerId(peerId);
-  })
-  .catch((error) => {
-    console.log("Error in startAdvertise: ", error);
-  });
+const peerId = await startAdvertise("My Device", Strategy.P2P_STAR);
 ```
 
 #### `stopAdvertise()`
 
-Stop advertising a connection.
-
-```ts
-function stopAdvertise(): Promise<void>;
-```
-
 ```ts
 import { stopAdvertise } from "expo-nearby-connections";
 
-stopAdvertise()
-  .then(() => {
-    // handler after stop advertising
-  })
-  .catch((error) => {
-    console.log("Error in stopAdvertise: ", error);
-  });
+await stopAdvertise();
 ```
 
-#### `startDiscovery()`
+### Discover
 
-Initiate devices to discover a nearby devices.
+#### `startDiscovery(name, strategy?)`
 
-```ts
-function startDiscovery(
-  name: string,
-  strategy?: Strategy = Strategy.P2P_STAR // only for android
-): Promise<string>;
-```
+Starts scanning for nearby advertisers.
 
 ```ts
-import { startDiscovery } from "expo-nearby-connections";
+import { startDiscovery, Strategy } from "expo-nearby-connections";
 
-startDiscovery("My Device Name Or ID", Strategy.P2P_STAR)
-  .then((peerId) => {
-    setMyPeerId(peerId);
-  })
-  .catch((error) => {
-    console.log("Error in startDiscovery: ", error);
-  });
+const peerId = await startDiscovery("My Device", Strategy.P2P_STAR);
 ```
 
 #### `stopDiscovery()`
 
-Stop discovering a nearby devices.
-
-```ts
-function stopDiscovery(): Promise<void>;
-```
-
 ```ts
 import { stopDiscovery } from "expo-nearby-connections";
 
-stopDiscovery()
-  .then(() => {
-    // handler after stop discovering
-  })
-  .catch((error) => {
-    console.log("Error in stopDiscovery: ", error);
-  });
+await stopDiscovery();
 ```
 
-#### `requestConnection()`
+### Connection
 
-Request a connection to a nearby device.
+#### `requestConnection(advertisePeerId)`
 
-```ts
-function requestConnection(advertisePeerId: string): Promise<void>;
-```
+Sends a connection request to an advertiser found via `onPeerFound`.
 
 ```ts
 import { requestConnection } from "expo-nearby-connections";
 
-requestConnection(advertisePeerId)
-  .then(() => {
-    // handler after request connection
-  })
-  .catch((error) => {
-    console.log("Error in requestConnection: ", error);
-  });
+await requestConnection(peerId);
 ```
 
-#### `acceptConnection()`
+#### `acceptConnection(targetPeerId)`
 
-Accept a connection from a nearby device.
-
-```ts
-function acceptConnection(targetPeerId: string): Promise<void>;
-```
+Accepts an incoming connection request (called on the advertiser side).
 
 ```ts
 import { acceptConnection } from "expo-nearby-connections";
 
-acceptConnection(targetPeerId)
-  .then(() => {
-    // handler after accept connection
-  })
-  .catch((error) => {
-    console.log("Error in acceptConnection: ", error);
-  });
+await acceptConnection(peerId);
 ```
 
-#### `rejectConnection()`
+#### `rejectConnection(targetPeerId)`
 
-Reject a connection from a nearby device.
-
-```ts
-function rejectConnection(targetPeerId: string): Promise<void>;
-```
+Rejects an incoming connection request.
 
 ```ts
 import { rejectConnection } from "expo-nearby-connections";
 
-rejectConnection(targetPeerId)
-  .then(() => {
-    // handler after reject connection
-  })
-  .catch((error) => {
-    console.log("Error in rejectConnection: ", error);
-  });
+await rejectConnection(peerId);
 ```
 
-#### `disconnect()`
+#### `disconnect(targetPeerId?)`
 
-disconnect from a connected nearby devices.
+Disconnects from a connected peer.
 
-```ts
-function disconnect(
-  connectedPeerId?: string // for android only
-): Promise<void>;
-```
+- **Android**: if `targetPeerId` is provided, disconnects only that endpoint; omitting it calls `stopAllEndpoints()`.
+- **iOS**: `targetPeerId` is always ignored — `MCSession.disconnect()` terminates the entire session.
 
 ```ts
 import { disconnect } from "expo-nearby-connections";
 
-disconnect(connectedPeerId)
-  .then(() => {
-    // handler after disconnect
-  })
-  .catch((error) => {
-    console.log("Error in disconnect: ", error);
-  });
+await disconnect(peerId); // Android: disconnect specific peer
+await disconnect();       // Android: disconnect all / iOS: disconnect session
 ```
 
-#### `sendText()`
+### Messaging
 
-Send text to a connected nearby devices.
+#### `sendText(targetPeerId, text)`
 
-```ts
-function sendText(connectedPeerId: string, text: string): Promise<void>;
-```
+Sends a UTF-8 text message to a connected peer.
 
 ```ts
 import { sendText } from "expo-nearby-connections";
 
-sendText(connectedPeerId, text)
-  .then(() => {
-    // handler after send text
-  })
-  .catch((error) => {
-    console.log("Error in sendText: ", error);
-  });
+await sendText(peerId, "Hello!");
 ```
 
-### Event Handlers
+### Events
 
-#### `onInvitationReceived()`
+All event listeners return an `Unsubscribe` function. Call it to remove the listener.
 
-listener for incoming invitation request connection from nearby devices.
+#### `onPeerFound(callback)`
 
-```ts
-function onInvitationReceived(
-  (data: {peerId: string; name: string}) => void
-): Function;
-```
-
-```ts
-import { onInvitationReceived } from "expo-nearby-connections";
-
-const unsubscribe = onInvitationReceived(({ peerId, name }) => {
-  // handler
-});
-
-unsubscribe();
-```
-
-#### `onConnected()`
-
-listener for connected to nearby devices.
-
-```ts
-function onConnected(
-  (data: {peerId: string; name: string}) => void
-): Function;
-```
-
-```ts
-import { onConnected } from "expo-nearby-connections";
-
-const unsubscribe = onConnected(({ peerId, name }) => {
-  // handler
-});
-
-unsubscribe();
-```
-
-#### `onDisconnected()`
-
-listener for disconnected from nearby devices.
-
-```ts
-function onDisconnected(
-  (data: {peerId: string}) => void
-): Function;
-```
-
-```ts
-import { onDisconnected } from "expo-nearby-connections";
-
-const unsubscribe = onDisconnected(({ peerId }) => {
-  // handler
-});
-
-unsubscribe();
-```
-
-#### `onPeerFound()`
-
-listener for found nearby devices.
-
-```ts
-function onPeerFound(
-  (data: {peerId: string; name: string}) => void
-): Function;
-```
+Fires when a discoverer finds an advertiser.
 
 ```ts
 import { onPeerFound } from "expo-nearby-connections";
 
 const unsubscribe = onPeerFound(({ peerId, name }) => {
-  // handler
+  console.log("Found:", name);
 });
 
-unsubscribe();
+unsubscribe(); // cleanup
 ```
 
-#### `onPeerLost()`
+#### `onPeerLost(callback)`
 
-listener for lost nearby devices.
-
-```ts
-function onPeerLost(
-  (data: {peerId: string}) => void
-): Function;
-```
+Fires when a previously discovered advertiser goes out of range.
 
 ```ts
 import { onPeerLost } from "expo-nearby-connections";
 
 const unsubscribe = onPeerLost(({ peerId }) => {
-  // handler
+  // remove from list
 });
-
-unsubscribe();
 ```
 
-#### `onTextReceived()`
+#### `onInvitationReceived(callback)`
 
-listener for text received from nearby devices.
+Fires on the advertiser when a discoverer calls `requestConnection`.
 
 ```ts
-function onTextReceived(
-  (data: {peerId: string; text: string}) => void
-): Function;
+import { onInvitationReceived } from "expo-nearby-connections";
+
+const unsubscribe = onInvitationReceived(({ peerId, name }) => {
+  // prompt user to accept/reject
+});
 ```
+
+#### `onConnected(callback)`
+
+Fires on both sides when a connection is fully established.
+
+```ts
+import { onConnected } from "expo-nearby-connections";
+
+const unsubscribe = onConnected(({ peerId, name }) => {
+  // connection ready
+});
+```
+
+#### `onDisconnected(callback)`
+
+Fires when a peer disconnects.
+
+```ts
+import { onDisconnected } from "expo-nearby-connections";
+
+const unsubscribe = onDisconnected(({ peerId }) => {
+  // remove from connected list
+});
+```
+
+#### `onTextReceived(callback)`
+
+Fires when a text message arrives from a connected peer.
 
 ```ts
 import { onTextReceived } from "expo-nearby-connections";
 
 const unsubscribe = onTextReceived(({ peerId, text }) => {
-  // handler
+  console.log("Message from", peerId, ":", text);
 });
-
-unsubscribe();
 ```
 
-### Basic Setup
+## Usage example
 
-this is the basic setup for using the library.
+### Advertiser side
 
-#### Advertise a connection to other devices
+```tsx
+import { useEffect, useState } from "react";
+import {
+  startAdvertise,
+  stopAdvertise,
+  onInvitationReceived,
+  onConnected,
+  onDisconnected,
+  acceptConnection,
+} from "expo-nearby-connections";
 
-```ts
-import * as NearbyConnections from "expo-nearby-connection";
+function AdvertiserScreen() {
+  const [myPeerId, setMyPeerId] = useState<string>();
 
-...
+  useEffect(() => {
+    startAdvertise("My Device").then(setMyPeerId);
+    return () => { stopAdvertise(); };
+  }, []);
 
-// Advertise a connection
-useEffect(() => {
-    NearbyConnections.startAdvertise("My Device Name Or ID")
-        .then((peerId) => {
-            setMyPeerId(peerId);
-        }).catch((error) => {
-            // error handler
-        })
-
-    return () => {
-        stopAdvertise();
-    }
-}, [])
-
-// Listen for incoming connections
-useEffect(() => {
-    const onInvitationListener = NearbyConnections.onInvitationReceived((data) => {
-        // handler when discovery device is requesting connection
-        NearbyConnections.acceptConnection(data.peerId)
-    })
-
-    const onConnectedListener = NearbyConnections.onConnected((data) => {
-        // handler when the advertise device is accepted the request connection
-    })
-
-    const onDisconnectedListener = NearbyConnections.onDisconnected((data) => {
-        // handler when discovery device is disconnected
-    })
-
-    return () => {
-        onInvitationListener();
-        onConnectedListener();
-        onDisconnectedListener();
-    }
-}, [])
-```
-
-#### Discover nearby devices
-
-```ts
-import * as NearbyConnections from "expo-nearby-connection";
-
-...
-
-// Discover a connection
-useEffect(() => {
-    NearbyConnections.startDiscovery("My Device Name Or ID")
-        .then((peerId) => {
-            setMyPeerId(peerId);
-        }).catch((error) => {
-            // error handler
-        })
-
-    return () => {
-        stopDiscovery();
-    }
-}, [])
-
-// Listen for discovered devices
-useEffect(() => {
-    const onPeerFoundListener = NearbyConnections.onPeerFound((data) => {
-        setDiscoveredPeers((peers) => [...peers, data]);
-    })
-
-    const onPeerLostListener = NearbyConnections.onPeerLost((data) => {
-        setDiscoveredPeers((peers) =>
-            peers.filter((peer) => peer.peerId !== data.peerId)
-        );
-    })
-
-    return () => {
-        onPeerFoundListener();
-        onPeerLostListener();
-    }
-})
-
-// Listen for connection state that coming from advertised devices
-useEffect(() => {
-    const onConnectedListener = NearbyConnections.onConnected((data) => {
-        // handler when the advertise device is accepted the request connection
-    })
-
-    const onDisconnectedListener = NearbyConnections.onDisconnected((data) => {
-        // handler when the advertise device is rejected the request connection
-    })
-
-    return () => {
-        onConnectedListener();
-        onDisconnectedListener();
-    }
-}, [])
-
-const handleRequestConnection = (selectedPeerId: string) => {
-    NearbyConnections.requestConnection(selectedPeerId);
+  useEffect(() => {
+    const unsub = onInvitationReceived(({ peerId }) => {
+      acceptConnection(peerId);
+    });
+    return unsub;
+  }, []);
 }
 ```
 
-#### Sending and Receiving Text
+### Discoverer side
 
-```ts
-import * as NearbyConnections from "expo-nearby-connection";
+```tsx
+import { useEffect, useState } from "react";
+import {
+  startDiscovery,
+  stopDiscovery,
+  onPeerFound,
+  onPeerLost,
+  requestConnection,
+  type BasePeer,
+} from "expo-nearby-connections";
 
-...
+function DiscovererScreen() {
+  const [peers, setPeers] = useState<BasePeer[]>([]);
 
-// Listen to incoming text messages
-useEffect(() => {
-    const onTextReceivedListener = NearbyConnections.onTextReceived((data) => {
-        setMessages((message) => [...message, {
-            peerId: data.peerId,
-            text: data.text
-        }]);
-    })
+  useEffect(() => {
+    startDiscovery("My Device");
+    return () => { stopDiscovery(); };
+  }, []);
 
-    return () => {
-        onTextReceivedListener();
-    }
-})
+  useEffect(() => {
+    const unsubFound = onPeerFound((peer) => {
+      setPeers((prev) => [...prev, peer]);
+    });
+    const unsubLost = onPeerLost(({ peerId }) => {
+      setPeers((prev) => prev.filter((p) => p.peerId !== peerId));
+    });
+    return () => { unsubFound(); unsubLost(); };
+  }, []);
 
-const handleSendText = (message: string) => {
-    NearbyConnections.sendText(connectedPeerId, message);
+  const connect = (peerId: string) => requestConnection(peerId);
 }
+```
+
+## Development
+
+```bash
+# from repo root
+pnpm install
+pnpm build
+
+# run example app
+cd example
+pnpm install
+pnpm prebuild --clean --no-install
+
+# iOS
+pnpm ios
+
+# Android
+pnpm android
 ```
 
 ## Contributing
 
-We welcome contributions! Please submit a pull request or file an issue on our GitHub repository.
+Contributions are welcome. Please open an issue first for major changes.
+
+See [CHANGELOG.md](./CHANGELOG.md) for release history.

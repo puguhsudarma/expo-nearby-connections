@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/plugin-props.type.ts","./src/to-kebab-case.ts","./src/with-android-permissions.ts","./src/with-nsbonjour-services-info-plist.ts","./src/with-nslocal-network-usage-info-plist.ts"],"version":"5.9.3"}

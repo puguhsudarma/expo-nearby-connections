@@ -1,39 +1,4 @@
-export enum Strategy {
-  P2P_CLUSTER = 1,
-  P2P_STAR = 2,
-  P2P_POINT_TO_POINT = 3,
-}
-
-export interface NearbyConnectionsNativeModule {
-  isPlayServicesAvailable(): Promise<boolean>;
-
-  startAdvertise(name: string, strategy?: Strategy): Promise<string>;
-
-  stopAdvertise(): Promise<void>;
-
-  startDiscovery(name: string, strategy?: Strategy): Promise<string>;
-
-  stopDiscovery(): Promise<void>;
-
-  requestConnection(advertisePeerId: string): Promise<void>;
-
-  acceptConnection(targetPeerId: string): Promise<void>;
-
-  rejectConnection(targetPeerId: string): Promise<void>;
-
-  disconnect(targetPeerId?: string): Promise<void>;
-
-  sendText(targetPeerId: string, text: string): Promise<void>;
-}
-
-export enum EventNames {
-  ON_PEER_FOUND = "onPeerFound",
-  ON_PEER_LOST = "onPeerLost",
-  ON_INVITATION_RECEIVED = "onInvitationReceived",
-  ON_CONNECTED = "onConnected",
-  ON_DISCONNECTED = "onDisconnected",
-  ON_TEXT_RECEIVED = "onTextReceived",
-}
+export { Strategy } from "../NearbyConnections.nitro";
 
 export interface BasePeer {
   peerId: string;

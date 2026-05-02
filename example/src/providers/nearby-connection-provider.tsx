@@ -9,6 +9,7 @@ import {
 import {
   acceptConnection,
   disconnect,
+  rejectConnection,
   requestConnection,
   sendText,
 } from "../../../src/native-modules/connection";
@@ -36,11 +37,7 @@ interface ContextType {
   stopAdvertise: () => Promise<void>;
   startDiscovery: (name: string, strategy?: Strategy) => Promise<string>;
   stopDiscovery: () => Promise<void>;
-  requestConnection: (
-    name: string,
-    peerId: string,
-    timeoutInSeconds?: number
-  ) => Promise<void>;
+  requestConnection: (advertisePeerId: string) => Promise<void>;
   acceptConnection: (peerId: string) => Promise<void>;
   rejectConnection: (peerId: string) => Promise<void>;
   disconnect: (peerId?: string) => Promise<void>;
@@ -63,7 +60,7 @@ interface ConnectedPeerWithStatus extends InvitationReceived {
 }
 
 export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
-  const { isGranted, requestPermissionHandler } = useNearbyPermission(true);
+  const { isGranted, requestPermissionHandler } = useNearbyPermission();
   const [actorType, setActorType] = useState<ActorType>();
   const isAdvertised = actorType === "advertised";
   const isDiscovered = actorType === "discovered";
@@ -74,8 +71,6 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
   >([]);
   const isConnected = connectedPeers.length > 0;
   const isDisconnected = connectedPeers.length === 0;
-
-  console.log("discoveredPeers: ", discoveredPeers);
 
   // listener for advertise and request connection events
   useEffect(() => {
@@ -88,8 +83,6 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
     }
 
     const onInvitationReceivedListener = onInvitationReceived((data) => {
-      console.log("onInvitationReceived: ", data);
-
       Alert.alert("Received invitation", `Peer: ${data.peerId}`, [
         {
           text: "Accept",
@@ -109,8 +102,6 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
     });
 
     const onConnectedListener = onConnected((data) => {
-      console.log("onConnected: ", data);
-
       setConnectedPeers((peers) =>
         peers.map((peer) =>
           peer.peerId === data.peerId ? { ...peer, isConnected: true } : peer
@@ -119,8 +110,6 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
     });
 
     const onDisconnectedListener = onDisconnected((data) => {
-      console.log("onDisconnected: ", data);
-
       setConnectedPeers((peers) =>
         peers.filter((peer) => peer.peerId !== data.peerId)
       );
@@ -143,14 +132,10 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
     }
 
     const onPeerFoundListener = onPeerFound((data) => {
-      console.log("onPeerFound: ", data);
-
       setDiscoveredPeers((peers) => [...peers, data]);
     });
 
     const onPeerLostListener = onPeerLost((data) => {
-      console.log("onPeerLost: ", data);
-
       setDiscoveredPeers((peers) =>
         peers.filter((peer) => peer.peerId !== data.peerId)
       );
@@ -177,11 +162,9 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
       setDevicePeerId(result);
       setActorType("advertised");
 
-      console.log("devicePeerId", result);
-
       return result;
     },
-    [isAdvertised]
+    [isAdvertised, devicePeerId]
   );
 
   const _stopAdvertise = useCallback(async (): Promise<void> => {
@@ -189,7 +172,7 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
       return;
     }
 
-    const [error, result] = await safeAwait(stopAdvertise());
+    const [error] = await safeAwait(stopAdvertise());
 
     if (error) {
       throw error;
@@ -214,11 +197,9 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
       setDevicePeerId(result);
       setActorType("discovered");
 
-      console.log("devicePeerId", result);
-
       return result;
     },
-    [isDiscovered]
+    [isDiscovered, devicePeerId]
   );
 
   const _stopDiscovery = useCallback(async (): Promise<void> => {
@@ -226,7 +207,7 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
       return;
     }
 
-    const [error, result] = await safeAwait(stopDiscovery());
+    const [error] = await safeAwait(stopDiscovery());
 
     if (error) {
       throw error;
@@ -237,18 +218,12 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
   }, [isDiscovered]);
 
   const _requestConnection = useCallback(
-    async (
-      name: string,
-      advertisePeerId: string,
-      timeoutInSeconds?: number
-    ): Promise<void> => {
+    async (advertisePeerId: string): Promise<void> => {
       if (isConnected) {
         return;
       }
 
-      const [error, result] = await safeAwait(
-        requestConnection(name, advertisePeerId, timeoutInSeconds)
-      );
+      const [error] = await safeAwait(requestConnection(advertisePeerId));
 
       if (error) {
         throw error;
@@ -259,11 +234,7 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
 
   const _acceptConnection = useCallback(
     async (peerId: string): Promise<void> => {
-      if (!isConnected) {
-        return;
-      }
-
-      const [error, result] = await safeAwait(acceptConnection(peerId));
+      const [error] = await safeAwait(acceptConnection(peerId));
 
       if (error) {
         throw error;
@@ -275,31 +246,22 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
         )
       );
     },
-    [isConnected]
+    []
   );
 
   const _rejectConnection = useCallback(
     async (peerId: string): Promise<void> => {
-      if (!isConnected) {
-        return;
-      }
-
-      const [error, result] = await safeAwait(disconnect(peerId));
+      const [error] = await safeAwait(rejectConnection(peerId));
 
       if (error) {
         throw error;
       }
 
       setConnectedPeers((peers) =>
-        peers.map((peer) =>
-          peer.peerId === peerId ? { ...peer, isConnected: false } : peer
-        )
+        peers.filter((peer) => peer.peerId !== peerId)
       );
-
-      setActorType(undefined);
-      setDevicePeerId(undefined);
     },
-    [isConnected]
+    []
   );
 
   const _disconnect = useCallback(async (): Promise<void> => {
@@ -307,7 +269,7 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
       return;
     }
 
-    await safeAwait(disconnect(devicePeerId));
+    await safeAwait(disconnect());
 
     setConnectedPeers([]);
     setActorType(undefined);
@@ -316,7 +278,10 @@ export const NearbyConnectionProvider: React.FC<Props> = ({ children }) => {
 
   const _sendText = useCallback(
     async (peerId: string, text: string): Promise<void> => {
-      sendText(peerId, text);
+      const [error] = await safeAwait(sendText(peerId, text));
+      if (error) {
+        throw error;
+      }
     },
     []
   );

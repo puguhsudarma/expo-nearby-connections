@@ -7,8 +7,6 @@ export function usePayloadListener(targetDevice: BasePeer) {
 
   useEffect(() => {
     const unsubscribe = onTextReceived((data) => {
-      console.log("onTextReceived: ", data);
-
       const newMessage = {
         _id: Date.now(),
         createdAt: new Date(),

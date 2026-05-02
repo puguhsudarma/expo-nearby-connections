@@ -1,10 +1,35 @@
 {
   "name": "expo-nearby-connections",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "P2P connections library for Expo. Supports Android and iOS.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    }
+  },
+  "files": [
+    "android/src",
+    "android/build.gradle",
+    "android/CMakeLists.txt",
+    "ios",
+    "nitrogen/generated",
+    "build",
+    "plugin/build",
+    "src",
+    "app.plugin.js",
+    "expo-module.config.json",
+    "ExpoNearbyConnections.podspec",
+    "nitro.json",
+    "package.json",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "scripts": {
+    "reset": "find . -maxdepth 2 -type d -name node_modules | xargs rm -rfv && pnpm install",
     "build": "expo-module build",
     "clean": "expo-module clean",
     "lint": "expo-module lint",
@@ -19,27 +44,39 @@
     "react-native",
     "expo",
     "nearby-connections",
-    "P2P-connections"
+    "p2p",
+    "bluetooth",
+    "multipeer-connectivity",
+    "google-nearby",
+    "wifi-direct",
+    "peer-to-peer",
+    "react-native-module"
   ],
-  "repository": "https://github.com/puguhsudarma/expo-nearby-connections",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/puguhsudarma/expo-nearby-connections.git"
+  },
   "bugs": {
     "url": "https://github.com/puguhsudarma/expo-nearby-connections/issues"
   },
-  "author": "Reroet <wayanpuguhsudarma@gmail.com> (https://github.com/puguhsudarma)",
+  "author": "reroet <wayanpuguhsudarma@gmail.com> (https://github.com/puguhsudarma)",
   "license": "MIT",
   "homepage": "https://github.com/puguhsudarma/expo-nearby-connections#readme",
   "dependencies": {},
   "devDependencies": {
-    "@biomejs/biome": "1.9.3",
-    "@types/react": "^18.0.25",
-    "expo-module-scripts": "^3.4.1",
-    "expo-modules-core": "^1.11.12",
-    "react": "^18.3.1",
-    "react-native": "^0.75.3"
+    "@biomejs/biome": "1.9.4",
+    "@types/react": "~19.2.0",
+    "expo-module-scripts": "^4.0.0",
+    "nitrogen": "^0.35.5",
+    "react": "19.2.0",
+    "react-native": "0.83.9",
+    "react-native-nitro-modules": "^0.35.5"
   },
   "peerDependencies": {
-    "expo": "*",
+    "expo": ">=52.0.0",
     "react": "*",
-    "react-native": "*"
-  }
+    "react-native": "*",
+    "react-native-nitro-modules": ">=0.35.0"
+  },
+  "packageManager": "pnpm@10.33.0"
 }
