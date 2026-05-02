@@ -125,7 +125,15 @@ repositories {
 }
 
 dependencies {
+  // For < 0.71, this will be from the local maven repo
+  // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
+  //noinspection GradleDynamicVersion
+  implementation "com.facebook.react:react-native:+"
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${getKotlinVersion()}"
   implementation "com.google.android.gms:play-services-nearby:19.3.0"
   implementation project(":react-native-nitro-modules")
+  // compileOnly — provided by the consuming Expo app at runtime, needed only to register
+  // NearbyConnectionsExpoModule via Expo autolinking so NearbyConnectionsOnLoad.initializeNative()
+  // is called on app startup.
+  compileOnly project(':expo-modules-core')
 }

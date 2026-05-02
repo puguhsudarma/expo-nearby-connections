@@ -1,4 +1,4 @@
-package expo.modules.nearbyconnections
+package com.margelo.nitro.expo.modules.nearbyconnections
 
 import android.content.Context
 import android.util.Log
@@ -20,8 +20,7 @@ import com.google.android.gms.nearby.connection.PayloadCallback
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate
 import com.margelo.nitro.NitroModules
 import com.margelo.nitro.core.Promise
-import com.margelo.nitro.expo.modules.nearbyconnections.HybridNearbyConnectionsSpec
-import com.margelo.nitro.expo.modules.nearbyconnections.Strategy
+import expo.modules.nearbyconnections.getStrategy
 import java.util.concurrent.ConcurrentHashMap
 
 @DoNotStrip
@@ -85,7 +84,7 @@ class HybridNearbyConnections : HybridNearbyConnectionsSpec() {
 
     override fun stopAdvertise(): Promise<Unit> {
         connectionsClient.stopAdvertising()
-        return Promise.resolved()
+        return Promise.resolved(Unit)
     }
 
     override fun startDiscovery(name: String, strategy: Strategy?): Promise<String> {
@@ -104,7 +103,7 @@ class HybridNearbyConnections : HybridNearbyConnectionsSpec() {
 
     override fun stopDiscovery(): Promise<Unit> {
         connectionsClient.stopDiscovery()
-        return Promise.resolved()
+        return Promise.resolved(Unit)
     }
 
     override fun requestConnection(advertisePeerId: String): Promise<Unit> {
@@ -137,7 +136,7 @@ class HybridNearbyConnections : HybridNearbyConnectionsSpec() {
         } else {
             connectionsClient.stopAllEndpoints()
         }
-        return Promise.resolved()
+        return Promise.resolved(Unit)
     }
 
     override fun sendText(targetPeerId: String, text: String): Promise<Unit> {
