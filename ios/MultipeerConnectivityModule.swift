@@ -1,6 +1,6 @@
 import MultipeerConnectivity
 
-public class MultipeerConnectivityModule: NSObject, NearbyConnectionModule {
+public class MultipeerConnectivityModule: NSObject {
     private var myPeerId: MCPeerID?
     private var advertiser: MCNearbyServiceAdvertiser?
     private var discovery: MCNearbyServiceBrowser?

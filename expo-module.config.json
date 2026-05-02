@@ -1,5 +1,8 @@
 {
   "platforms": ["ios", "android"],
+  "apple": {
+    "podspecPath": "ExpoNearbyConnections.podspec"
+  },
   "android": {
     "modules": ["expo.modules.nearbyconnections.NearbyConnectionsExpoModule"]
   }
