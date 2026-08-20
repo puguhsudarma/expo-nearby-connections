@@ -5,6 +5,7 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "exports": {
+    "./app.plugin.js": "./app.plugin.js",
     ".": {
       "types": "./build/index.d.ts",
       "default": "./build/index.js"
